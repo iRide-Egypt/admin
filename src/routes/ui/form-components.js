@@ -49,7 +49,7 @@ const uploader = new FineUploaderTraditional({
 
 const cakeData = [
   {
-    name: "Marble Cake"
+    name: "Giza Event"
   },
   {
     name: "Fruitcake"

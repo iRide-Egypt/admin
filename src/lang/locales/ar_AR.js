@@ -114,14 +114,15 @@ module.exports = {
   
   
     /* 04.Dashboards */
-    "dashboards.pending-orders": "Pending Orders",
-    "dashboards.completed-orders": "Completed Orders",
-    "dashboards.refund-requests": "Refund Requests",
+    "dashboards.pending-orders": "قيد الانتظار",
+    "dashboards.completed-orders": "الطلبات المكتملة",
+    "dashboards.refund-requests": "طلبات الاسترداد",
     "dashboards.new-comments": "New Comments",
     "dashboards.sales": "Sales",
+    "dashboards.events": "الأحداث",
     "dashboards.orders": "Orders",
     "dashboards.refunds": "Refunds",
-    "dashboards.recent-orders": "Recent Orders",
+    "dashboards.recent-orders": "الطلبيات الأخيرة",
     "dashboards.product-categories": "Product Categories",
     "dashboards.cakes": "Cakes",
     "dashboards.tickets": "Tickets",

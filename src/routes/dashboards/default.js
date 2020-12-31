@@ -231,7 +231,7 @@ class DefaultDashboard extends Component {
                   </div>
                   <CardBody>
                     <CardTitle>
-                      <IntlMessages id="dashboards.sales" />
+                      <IntlMessages id="dashboards.events" />
                     </CardTitle>
                     <div className="dashboard-line-chart">
                       <LineShadow {...lineChartConfig} />

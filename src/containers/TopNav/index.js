@@ -299,29 +299,29 @@ class TopNav extends Component {
                     <i className="iconsmind-Shop-4 d-block" />{" "}
                     <IntlMessages id="menu.dashboards" />
                   </NavLink>
-
+{/* 
                   <NavLink to="/app/ui" className="icon-menu-item">
                     <i className="iconsmind-Pantone d-block" />{" "}
                     <IntlMessages id="menu.ui" />
-                  </NavLink>
+                  </NavLink> */}
                   <NavLink to="/app/ui/charts" className="icon-menu-item">
                     <i className="iconsmind-Bar-Chart d-block" />{" "}
                     <IntlMessages id="menu.charts" />
                   </NavLink>
-                  <NavLink
+                  {/* <NavLink
                     to="/app/applications/chat"
                     className="icon-menu-item"
                   >
                     <i className="iconsmind-Speach-BubbleDialog d-block" />{" "}
                     <IntlMessages id="menu.chat" />
-                  </NavLink>
-                  <NavLink
+                  </NavLink> */}
+                  {/* <NavLink
                     to="/app/applications/survey"
                     className="icon-menu-item"
                   >
                     <i className="iconsmind-Formula d-block" />{" "}
                     <IntlMessages id="menu.survey" />
-                  </NavLink>
+                  </NavLink> */}
                   <NavLink
                     to="/app/applications/todo"
                     className="icon-menu-item"
