@@ -110,7 +110,7 @@ export const visitChartConfig = {
             beginAtZero: true,
             stepSize: 5,
             min: 50,
-            max: 70,
+            max: 90,
             padding: 20
           }
         }

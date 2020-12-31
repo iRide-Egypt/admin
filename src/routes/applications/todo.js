@@ -195,6 +195,7 @@ class TodoApplication extends Component {
               <div className="float-sm-right">
                 <Button
                   color="primary"
+                  outline="light"
                   size="lg"
                   className="top-right-button"
                   onClick={this.toggleModal}
@@ -303,12 +304,12 @@ class TodoApplication extends Component {
                   <ModalFooter>
                     <Button
                       color="secondary"
-                      outline
+                      outline="light"
                       onClick={this.toggleModal}
                     >
                       <IntlMessages id="todo.cancel" />
                     </Button>
-                    <Button color="primary" onClick={() => this.addNetItem()}>
+                    <Button color="primary" outline="light" onClick={() => this.addNetItem()}>
                       <IntlMessages id="todo.submit" />
                     </Button>{" "}
                   </ModalFooter>
@@ -317,7 +318,7 @@ class TodoApplication extends Component {
                   isOpen={this.state.dropdownSplitOpen}
                   toggle={this.toggleSplit}
                 >
-                  <div className="btn btn-primary pl-4 pr-0 check-button">
+                  <div className="btn btn-outline-light pl-4 pr-0 check-button">
                     <Label
                       for="checkAll"
                       className="custom-control custom-checkbox mb-0 d-inline-block"
@@ -347,6 +348,7 @@ class TodoApplication extends Component {
                   <DropdownToggle
                     caret
                     color="primary"
+                    outline="light"
                     className="dropdown-toggle-split pl-2 pr-2"
                   />
                   <DropdownMenu right>
@@ -535,7 +537,7 @@ class TodoApplication extends Component {
                   </NavLink>
                 </NavItem>
               </ul>
-              <p className="text-muted text-small">
+              {/* <p className="text-muted text-small">
                 <IntlMessages id="todo.categories" />
               </p>
               <ul className="list-unstyled mb-5">
@@ -561,11 +563,11 @@ class TodoApplication extends Component {
                     </NavItem>
                   );
                 })}
-              </ul>
-              <p className="text-muted text-small">
+              </ul> */}
+              {/* <p className="text-muted text-small">
                 <IntlMessages id="todo.labels" />
-              </p>
-              <div>
+              </p> */}
+              {/* <div>
                 {labels.map((l, index) => {
                   return (
                     <p className="d-sm-inline-block mb-1" key={index}>
@@ -590,7 +592,7 @@ class TodoApplication extends Component {
                     </p>
                   );
                 })}
-              </div>
+              </div> */}
             </div>
           </PerfectScrollbar>
         </ApplicationMenu>

@@ -78,7 +78,9 @@ const selectDataType = [
   { label: "Cupcake", value: "cupcake", key: 1 },
   { label: "Dessert", value: "dessert", key: 2 }
 ];
-
+const totalChart = {...visitChartConfig};
+totalChart.options.scales.yAxes[0].ticks.max=75;
+totalChart.data.datasets[0].data=[60, 73, 60, 65, 60, 68, 60];
 const dataTableColumns = [
   {
     Header: "Name",
@@ -640,7 +642,7 @@ class DefaultDashboard extends Component {
               </CardBody>
 
               <div className="chart card-body pt-0">
-                <LineShadow {...visitChartConfig} />
+                <LineShadow {...totalChart} />
               </div>
             </Card>
           </Colxx>

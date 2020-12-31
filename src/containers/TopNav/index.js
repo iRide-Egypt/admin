@@ -226,7 +226,7 @@ class TopNav extends Component {
           </svg>
         </NavLink>
 
-        <div className="search" data-search-path="/app/layouts/search">
+        {/* <div className="search" data-search-path="/app/layouts/search">
           <Input
             name="searchKeyword"
             id="searchKeyword"
@@ -241,7 +241,7 @@ class TopNav extends Component {
           >
             <i className="simple-icon-magnifier" />
           </span>
-        </div>
+        </div> */}
 
         <div className="d-inline-block">
           <UncontrolledDropdown className="ml-2">
@@ -253,7 +253,7 @@ class TopNav extends Component {
             >
               <span className="name">{this.props.locale.toUpperCase()}</span>
             </DropdownToggle>
-            <DropdownMenu className="mt-3" right>
+            <DropdownMenu className="mt-3" >
             {
               localeOptions.map((l)=>{
                 return(
