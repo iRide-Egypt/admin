@@ -43,7 +43,7 @@ class TopNav extends Component {
       isInFullScreen: false,
       searchKeyword: "",
       username: "Loading..",
-      profilePicture: "/assets/img/irideback.jpg",
+      // profilePicture: "/assets/img/irideback.jpg",
     };
   }
 
