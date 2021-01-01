@@ -9,7 +9,7 @@ color options :
 	 'light.orange'		'dark.orange'
 	 'light.red'		  'dark.red'
 */
-var color = 'light.purple';
+var color = 'dark.red';
 if (localStorage.getItem('themeColor')) {
   color = localStorage.getItem('themeColor');
 }
