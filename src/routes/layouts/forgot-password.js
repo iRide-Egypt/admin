@@ -9,10 +9,10 @@ class ForgotPasswordLayout extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "demo@gogo.com"
+      email: "",
     };
   }
-
+ 
   componentDidMount() {
     document.body.classList.add("background");
   }
@@ -29,7 +29,7 @@ class ForgotPasswordLayout extends Component {
               <Colxx xxs="12" md="10" className="mx-auto my-auto">
                 <Card className="auth-card">
                   <div className="position-relative image-side ">
-                    <p className="text-white h2">MAGIC IS IN THE DETAILS</p>
+                    {/* <p className="text-white h2">MAGIC IS IN THE DETAILS</p>
                     <p className="white mb-0">
                       Please use your e-mail to reset your password. <br />
                       If you are not a member, please{" "}
@@ -37,7 +37,7 @@ class ForgotPasswordLayout extends Component {
                         register
                       </NavLink>
                       .
-                    </p>
+                    </p> */}
                   </div>
                   <div className="form-side">
                     <NavLink to={`/`} className="white">
@@ -48,7 +48,13 @@ class ForgotPasswordLayout extends Component {
                     </CardTitle>
                     <Form>
                       <Label className="form-group has-float-label mb-4">
-                        <Input type="email" defaultValue={this.state.email} />
+                        <Input
+                          type="email"
+                          onChange={(e) =>
+                            this.setState({ email: e.target.value })
+                          }
+                          defaultValue={this.state.email}
+                        />
                         <IntlMessages id="user.email" />
                       </Label>
 
@@ -56,6 +62,7 @@ class ForgotPasswordLayout extends Component {
                         <Button
                           href="/app"
                           color="primary"
+                          outline="light"
                           className="btn-shadow"
                           size="lg"
                         >

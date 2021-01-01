@@ -14,6 +14,7 @@ class LoginLayout extends Component {
     this.state = {
       email: "",
       password: "",
+      isInvalid: false,
     };
   }
   onUserLogin() {
@@ -24,7 +25,13 @@ class LoginLayout extends Component {
   handleEnter(e) {
     if (e.key === "Enter") {
       if (this.state.email !== "" && this.state.password !== "") {
+        console.log(this.props.loginUser(this.state, this.props.history));
         this.props.loginUser(this.state, this.props.history);
+        setTimeout(() => {
+          localStorage.getItem("user_id")
+            ? console.log("logged in")
+            : this.setState({ isInvalid: true });
+        }, 2000);
       }
     }
   }
@@ -39,6 +46,7 @@ class LoginLayout extends Component {
     document.body.classList.remove("background");
   }
   render() {
+    const { isInvalid } = this.state;
     return (
       <Fragment>
         <div className="fixed-background" />
@@ -65,6 +73,7 @@ class LoginLayout extends Component {
                       <Label className="form-group has-float-label mb-4">
                         <Input
                           type="email"
+                          invalid={isInvalid}
                           onKeyDown={(e) => this.handleEnter(e)}
                           onChange={(e) =>
                             this.setState({ email: e.target.value })
@@ -76,6 +85,7 @@ class LoginLayout extends Component {
                       <Label className="form-group has-float-label mb-4">
                         <Input
                           onKeyDown={(e) => this.handleEnter(e)}
+                          invalid={isInvalid}
                           onChange={(e) =>
                             this.setState({ password: e.target.value })
                           }
