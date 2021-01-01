@@ -12,11 +12,12 @@ class LoginLayout extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "demo@gogo.com",
-      password: "gogo123"
+      email: "",
+      password: "",
     };
   }
   onUserLogin() {
+    console.log(this.state);
     if (this.state.email !== "" && this.state.password !== "") {
       this.props.loginUser(this.state, this.props.history);
     }
@@ -38,15 +39,10 @@ class LoginLayout extends Component {
               <Colxx xxs="12" md="10" className="mx-auto my-auto">
                 <Card className="auth-card">
                   <div className="position-relative image-side ">
-                    <p className="text-white h2">MAGIC IS IN THE DETAILS</p>
+                    <p className="text-white h2">iRide Admin Tool</p>
                     <p className="white mb-0">
                       Please use your credentials to login.
-                      <br />
-                      If you are not a member, please{" "}
-                      <NavLink to={`/register`} className="white">
-                        register
-                      </NavLink>
-                      .
+                      
                     </p>
                   </div>
                   <div className="form-side">
@@ -58,11 +54,19 @@ class LoginLayout extends Component {
                     </CardTitle>
                     <Form>
                       <Label className="form-group has-float-label mb-4">
-                        <Input type="email" defaultValue={this.state.email} />
+                        <Input
+                          type="email"
+                          onChange={(e) =>
+                            this.setState({ email: e.target.value })
+                          }
+                          defaultValue={this.state.email}
+                        />
                         <IntlMessages id="user.email" />
                       </Label>
                       <Label className="form-group has-float-label mb-4">
-                        <Input type="password" />
+                        <Input  onChange={(e) =>
+                            this.setState({ password: e.target.value })
+                          } type="password" />
                         <IntlMessages
                           id="user.password"
                           defaultValue={this.state.password}
@@ -97,9 +101,6 @@ const mapStateToProps = ({ authUser }) => {
   return { user, loading };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    loginUser
-  }
-)(LoginLayout);
+export default connect(mapStateToProps, {
+  loginUser,
+})(LoginLayout);
