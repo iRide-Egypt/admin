@@ -438,7 +438,7 @@ class TopNav extends Component {
                 <DropdownItem>Account</DropdownItem>
                 <DropdownItem divider />
                 <DropdownItem onClick={() => this.handleLogout()}>
-                  Sign outs
+                  Sign out
                 </DropdownItem>
               </DropdownMenu>
             </UncontrolledDropdown>
