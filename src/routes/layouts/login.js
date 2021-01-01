@@ -17,12 +17,21 @@ class LoginLayout extends Component {
     };
   }
   onUserLogin() {
-    console.log(this.state);
     if (this.state.email !== "" && this.state.password !== "") {
       this.props.loginUser(this.state, this.props.history);
     }
   }
-
+  handleEnter(e) {
+    if (e.key === "Enter") {
+      if (this.state.email !== "" && this.state.password !== "") {
+        this.props.loginUser(this.state, this.props.history);
+      }
+    }
+  }
+  handleSubmit(e) {
+    e.preventDefault();
+    this.onUserLogin();
+  }
   componentDidMount() {
     document.body.classList.add("background");
   }
@@ -39,11 +48,11 @@ class LoginLayout extends Component {
               <Colxx xxs="12" md="10" className="mx-auto my-auto">
                 <Card className="auth-card">
                   <div className="position-relative image-side ">
-                    <p className="text-white h2">iRide Admin Tool</p>
+                    {/* <p className="text-white h2">iRide Admin Tool</p>
                     <p className="white mb-0">
                       Please use your credentials to login.
                       
-                    </p>
+                    </p> */}
                   </div>
                   <div className="form-side">
                     <NavLink to={`/`} className="white">
@@ -52,10 +61,11 @@ class LoginLayout extends Component {
                     <CardTitle className="mb-4">
                       <IntlMessages id="user.login-title" />
                     </CardTitle>
-                    <Form>
+                    <Form onSubmit={() => console.log("Submitted")}>
                       <Label className="form-group has-float-label mb-4">
                         <Input
                           type="email"
+                          onKeyDown={(e) => this.handleEnter(e)}
                           onChange={(e) =>
                             this.setState({ email: e.target.value })
                           }
@@ -64,9 +74,13 @@ class LoginLayout extends Component {
                         <IntlMessages id="user.email" />
                       </Label>
                       <Label className="form-group has-float-label mb-4">
-                        <Input  onChange={(e) =>
+                        <Input
+                          onKeyDown={(e) => this.handleEnter(e)}
+                          onChange={(e) =>
                             this.setState({ password: e.target.value })
-                          } type="password" />
+                          }
+                          type="password"
+                        />
                         <IntlMessages
                           id="user.password"
                           defaultValue={this.state.password}
@@ -78,6 +92,7 @@ class LoginLayout extends Component {
                         </NavLink>
                         <Button
                           color="primary"
+                          outline="light"
                           className="btn-shadow"
                           size="lg"
                           onClick={() => this.onUserLogin()}
