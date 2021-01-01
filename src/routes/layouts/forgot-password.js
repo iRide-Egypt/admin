@@ -2,7 +2,7 @@ import React, { Component, Fragment } from "react";
 import IntlMessages from "Util/IntlMessages";
 import { Row, Card, CardTitle, Form, Label, Input, Button } from "reactstrap";
 import { NavLink } from "react-router-dom";
-
+import firebase from "firebase";
 import { Colxx } from "Components/CustomBootstrap";
 
 class ForgotPasswordLayout extends Component {
@@ -12,7 +12,20 @@ class ForgotPasswordLayout extends Component {
       email: "",
     };
   }
- 
+  sendPasswordReset() {
+    const email = this.state.email;
+    firebase
+      .auth()
+      .sendPasswordResetEmail(email)
+      .then(() => {
+        console.log("resetPassword success");
+      })
+      .catch((error) => {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log(error, errorCode, errorMessage);
+      });
+  }
   componentDidMount() {
     document.body.classList.add("background");
   }
@@ -60,7 +73,9 @@ class ForgotPasswordLayout extends Component {
 
                       <div className="d-flex justify-content-end align-items-center">
                         <Button
-                          href="/app"
+                          onClick={(e) => {
+                            this.sendPasswordReset();
+                          }}
                           color="primary"
                           outline="light"
                           className="btn-shadow"
