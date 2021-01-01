@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import { injectIntl} from 'react-intl';
+import { injectIntl } from "react-intl";
 import {
   UncontrolledDropdown,
   DropdownItem,
   DropdownToggle,
   DropdownMenu,
   Input,
-  Button
+  Button,
 } from "reactstrap";
 import IntlMessages from "Util/IntlMessages";
 
@@ -18,13 +18,16 @@ import {
   setContainerClassnames,
   clickOnMobileMenu,
   logoutUser,
-  changeLocale
+  changeLocale,
 } from "Redux/actions";
 
-import { menuHiddenBreakpoint, searchPath,localeOptions } from "Constants/defaultValues";
+import {
+  menuHiddenBreakpoint,
+  searchPath,
+  localeOptions,
+} from "Constants/defaultValues";
 
 import notifications from "Data/topnav.notifications.json";
-
 
 class TopNav extends Component {
   constructor(props) {
@@ -38,11 +41,13 @@ class TopNav extends Component {
     this.removeEventsSearch = this.removeEventsSearch.bind(this);
     this.state = {
       isInFullScreen: false,
-      searchKeyword: ""
+      searchKeyword: "",
+      username: "Loading..",
+      profilePicture: "/assets/img/irideback.jpg",
     };
   }
-  
-  handleChangeLocale = locale => {
+
+  handleChangeLocale = (locale) => {
     this.props.changeLocale(locale);
   };
   isInFullScreen = () => {
@@ -55,7 +60,7 @@ class TopNav extends Component {
       (document.msFullscreenElement && document.msFullscreenElement !== null)
     );
   };
-  handleSearchIconClick = e => {
+  handleSearchIconClick = (e) => {
     if (window.innerWidth < menuHiddenBreakpoint) {
       let elem = e.target;
       if (!e.target.classList.contains("search")) {
@@ -112,13 +117,13 @@ class TopNav extends Component {
       if (input && input.classList) input.classList.remove("mobile-view");
       this.removeEventsSearch();
       this.setState({
-        searchKeyword: ""
+        searchKeyword: "",
       });
     }
   }
   handleSearchInputChange(e) {
     this.setState({
-      searchKeyword: e.target.value
+      searchKeyword: e.target.value,
     });
   }
   handleSearchInputKeyPress(e) {
@@ -130,7 +135,7 @@ class TopNav extends Component {
   search() {
     this.props.history.push(searchPath + "/" + this.state.searchKeyword);
     this.setState({
-      searchKeyword: ""
+      searchKeyword: "",
     });
   }
 
@@ -160,7 +165,7 @@ class TopNav extends Component {
       }
     }
     this.setState({
-      isInFullScreen: !isInFullScreen
+      isInFullScreen: !isInFullScreen,
     });
   };
 
@@ -182,16 +187,42 @@ class TopNav extends Component {
     e.preventDefault();
     this.props.clickOnMobileMenu(containerClassnames);
   }
-
+  updateUsername = () => {
+    switch (localStorage.getItem("user_id")) {
+      case "NYnE9NoeKiT08U05AmK2ijPpcvV2":
+        this.setState({ username: "Sohayb Hassan" });
+        this.setState({ profilePicture: "/assets/img/sohayb.jpg" });
+        break;
+      case "2jTImSqRJNOivjzGGLcDYmkE2lK2":
+        this.setState({ username: "Sohayb Hassan" });
+        this.setState({ profilePicture: "/assets/img/sohayb.jpg" });
+        break;
+      case "byN8fQxFkpaJJdi5OzfQhKywqiy2":
+        this.setState({ username: "Moaz M. Ali" });
+        this.setState({ profilePicture: "/assets/img/moaz.jpg" });
+        break;
+      case "yRGROLqSIZUyj2DSujoqfvLCqVV2":
+        this.setState({ username: "Gohary" });
+        this.setState({ profilePicture: "/assets/img/gohary.jpg" });
+        break;
+      default:
+        this.setState({ username: "Unknown" });
+        break;
+    }
+  };
+  componentDidMount() {
+    this.updateUsername();
+  }
   render() {
     const { containerClassnames, menuClickCount, locale } = this.props;
-    const {messages} = this.props.intl;
+    const { messages } = this.props.intl;
+
     return (
       <nav className="navbar fixed-top">
         <NavLink
           to="#"
           className="menu-button d-none d-md-block"
-          onClick={e =>
+          onClick={(e) =>
             this.menuButtonClick(e, menuClickCount, containerClassnames)
           }
         >
@@ -217,7 +248,7 @@ class TopNav extends Component {
         <NavLink
           to="#"
           className="menu-button-mobile d-xs-block d-sm-block d-md-none"
-          onClick={e => this.mobileMenuButtonClick(e, containerClassnames)}
+          onClick={(e) => this.mobileMenuButtonClick(e, containerClassnames)}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 17">
             <rect x="0.5" y="0.5" width="25" height="1" />
@@ -253,16 +284,17 @@ class TopNav extends Component {
             >
               <span className="name">{this.props.locale.toUpperCase()}</span>
             </DropdownToggle>
-            <DropdownMenu className="mt-3" >
-            {
-              localeOptions.map((l)=>{
-                return(
-                  <DropdownItem onClick={() => this.handleChangeLocale(l.id)} key={l.id}>
-                  {l.name}
-                </DropdownItem>
-                )
-              })
-            }
+            <DropdownMenu className="mt-3">
+              {localeOptions.map((l) => {
+                return (
+                  <DropdownItem
+                    onClick={() => this.handleChangeLocale(l.id)}
+                    key={l.id}
+                  >
+                    {l.name}
+                  </DropdownItem>
+                );
+              })}
             </DropdownMenu>
           </UncontrolledDropdown>
         </div>
@@ -299,7 +331,7 @@ class TopNav extends Component {
                     <i className="iconsmind-Shop-4 d-block" />{" "}
                     <IntlMessages id="menu.dashboards" />
                   </NavLink>
-{/* 
+                  {/* 
                   <NavLink to="/app/ui" className="icon-menu-item">
                     <i className="iconsmind-Pantone d-block" />{" "}
                     <IntlMessages id="menu.ui" />
@@ -397,9 +429,9 @@ class TopNav extends Component {
           <div className="user d-inline-block">
             <UncontrolledDropdown className="dropdown-menu-right">
               <DropdownToggle className="p-0" color="empty">
-                <span className="name mr-1">Sohayb Hassan</span>
+                <span className="name mr-1">{this.state.username}</span>
                 <span>
-                  <img alt="Profile" src="/assets/img/sohayb.jpg" />
+                  <img alt="Profile" src={this.state.profilePicture} />
                 </span>
               </DropdownToggle>
               <DropdownMenu className="mt-3" right>
@@ -422,7 +454,11 @@ const mapStateToProps = ({ menu, settings }) => {
   const { locale } = settings;
   return { containerClassnames, menuClickCount, locale };
 };
-export default injectIntl(connect(
-  mapStateToProps,
-  { setContainerClassnames, clickOnMobileMenu, logoutUser, changeLocale }
-)(TopNav));
+export default injectIntl(
+  connect(mapStateToProps, {
+    setContainerClassnames,
+    clickOnMobileMenu,
+    logoutUser,
+    changeLocale,
+  })(TopNav)
+);

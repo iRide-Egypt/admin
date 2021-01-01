@@ -31,7 +31,7 @@ class LoginLayout extends Component {
           localStorage.getItem("user_id")
             ? console.log("logged in")
             : this.setState({ isInvalid: true });
-        }, 2000);
+        }, 1500);
       }
     }
   }
