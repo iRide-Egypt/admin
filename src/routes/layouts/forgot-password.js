@@ -19,6 +19,8 @@ class ForgotPasswordLayout extends Component {
       .sendPasswordResetEmail(email)
       .then(() => {
         console.log("resetPassword success");
+        this.props.history.push("/login");
+
       })
       .catch((error) => {
         var errorCode = error.code;
