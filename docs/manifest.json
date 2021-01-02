@@ -19,7 +19,7 @@
             "url": "https://admin.irideegypt.com/#/app/applications/todo",
             "icons": [
                 {
-                    "src": "/icons/play-later.png",
+                    "src": "/squarelogo.png",
                     "sizes": "192x192"
                 }
             ]
