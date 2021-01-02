@@ -2,25 +2,34 @@
     "name": "iRide Admin Tool",
     "short_name": "iRAT",
     "theme_color": "#191a1b",
-    "icons":[
-      {
-        "src":"/squarelogo.png",
-        "type":"image/png",
-        "sizes": "512x512",
-        "purpose": "any maskable"
-      }
-
+    "icons": [
+        {
+            "src": "/squarelogo.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "any maskable"
+        }
     ],
     "background_color": "#2d2d2d",
-     "shortcuts": [
-    {
-      "name": "Open todo list",
-      "short_name": "Todo List",
-      "description": "View the todo list and add your todos.",
-      "url": "https://admin.irideegypt.com/#/app/applications/todo",
-      "icons": [{ "src": "/icons/play-later.png", "sizes": "192x192" }]
-    },
-    "categories":["horses","admin","tool"],
+    "shortcuts": [
+        {
+            "name": "Open todo list",
+            "short_name": "Todo List",
+            "description": "View the todo list and add your todos.",
+            "url": "https://admin.irideegypt.com/#/app/applications/todo",
+            "icons": [
+                {
+                    "src": "/icons/play-later.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "categories": [
+        "horses",
+        "admin",
+        "tool"
+    ],
     "display": "fullscreen",
     "start_url": "."
-  }
+}
