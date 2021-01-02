@@ -12,6 +12,14 @@
 
     ],
     "background_color": "#2d2d2d",
+     "shortcuts": [
+    {
+      "name": "Open todo list",
+      "short_name": "Todo List",
+      "description": "View the todo list and add your todos.",
+      "url": "https://admin.irideegypt.com/#/app/applications/todo",
+      "icons": [{ "src": "/icons/play-later.png", "sizes": "192x192" }]
+    },
     "categories":["horses","admin","tool"],
     "display": "fullscreen",
     "start_url": "."
