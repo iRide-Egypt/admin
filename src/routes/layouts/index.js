@@ -1,5 +1,5 @@
 import React from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, HashRouter } from 'react-router-dom';
 
 import dataList from './data-list';
 import thumbList from './thumb-list';
@@ -9,7 +9,7 @@ import details from './details';
 
 const Layouts = ({ match }) => (
     <div className="dashboard-wrapper">
-        <Switch>
+        <HashRouter>
             <Redirect exact from={`${match.url}/`} to={`${match.url}/data-list`} />
             <Route path={`${match.url}/data-list`} component={dataList} />            
             <Route path={`${match.url}/thumb-list`} component={thumbList} />            
@@ -18,7 +18,7 @@ const Layouts = ({ match }) => (
             <Route path={`${match.url}/search`} component={search} />  
             <Redirect to="/error" />
           
-        </Switch>
+        </HashRouter>
     </div>
 );
 
