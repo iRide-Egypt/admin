@@ -12,6 +12,7 @@
 
     ],
     "background_color": "#2d2d2d",
+    "categories":["horses","admin","tool"],
     "display": "fullscreen",
     "start_url": "."
   }
