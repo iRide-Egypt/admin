@@ -6,6 +6,11 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no"
     />
+    <meta name="theme-color" content="#191a1b" />
+    <meta name="description" content="iRide Admin Tool Application" />
+    <link rel="apple-touch-icon" href="favicon.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" sizes="192x192" href="favicon.png" />
     <link
       rel="stylesheet"
       href="/assets/fonts/simple-line-icons/css/simple-line-icons.css"
@@ -40,11 +45,6 @@
         }
       }
     </style>
-    <script>
-      import "https://cdn.jsdelivr.net/npm/@pwabuilder/pwaupdate";
-      const el = document.createElement("pwa-update");
-      document.body.appendChild(el);
-    </script>
   </head>
 
   <body>
@@ -63,5 +63,14 @@
     <div id="root">
       <div class="loading"></div>
     </div>
+    <script>
+        if('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./serviceworker.js')
+                    .then((reg) => console.log('Success: ', reg.scope))
+                    .catch((err) => console.log('Failure: ', err));
+            })
+        }
+    </script>
   </body>
 </html>

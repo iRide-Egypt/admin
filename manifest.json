@@ -7,9 +7,10 @@
         "src":"/favicon.png",
         "type":"image/png",
         "sizes": "1024x1024"
+        
       }
     ],
     "background_color": "#2d2d2d",
     "display": "fullscreen",
-    "start_url": "."
+    "start_url": "https://admin.irideegypt.com"
   }
