@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, withRouter, Switch, Redirect, HashRouter } from 'react-router-dom';
+import { Route, withRouter, Switch, Redirect } from 'react-router-dom';
 
 import TopNav from 'Containers/TopNav'
 import Sidebar from 'Containers/Sidebar';
@@ -20,13 +20,13 @@ class MainApp extends Component {
 				<Sidebar/>
 				<main>
 					<div className="container-fluid">
-						<HashRouter>
+						<Switch>
 							<Route path={`${match.url}/applications`} component={applications} />
 							<Route path={`${match.url}/dashboards`} component={dashboards} />
 							<Route path={`${match.url}/layouts`} component={layouts} />
 							<Route path={`${match.url}/ui`} component={ui} />
 							<Redirect to="/error" />
-						</HashRouter>
+						</Switch>
 					</div>
 				</main>
 			</div>

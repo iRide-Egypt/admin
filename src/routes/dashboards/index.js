@@ -1,5 +1,5 @@
 import React from 'react';
-import { Redirect, Route, Switch,HashRouter } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 import defaultDash from './default';
 import contentDash from './content';
@@ -8,7 +8,7 @@ import ecommerceDash from './ecommerce';
 
 const Dashboards = ({ match }) => (
     <div className="dashboard-wrapper">
-        <HashRouter>
+        <Switch>
             <Redirect exact from={`${match.url}/`} to={`${match.url}/default`} />
             <Route path={`${match.url}/default`} component={defaultDash} />
             <Route path={`${match.url}/content`} component={contentDash} />
@@ -16,7 +16,7 @@ const Dashboards = ({ match }) => (
             <Route path={`${match.url}/analytics`} component={analyticsDash} />
             <Redirect to="/error" />
 
-        </HashRouter>
+        </Switch>
     </div>
 );
 export default Dashboards;

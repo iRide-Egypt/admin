@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Redirect, Route, Switch, HashRouter} from 'react-router-dom';
+import { Redirect, Route, Switch} from 'react-router-dom';
 import { IntlProvider} from 'react-intl';
 
 import ColorSwitcher from 'Components/ColorSwitcher'
@@ -69,7 +69,7 @@ class App extends Component {
 
 					<Fragment>
   						<NotificationContainer />
-						<HashRouter>
+						<Switch>
 							<InitialPath
 							path={`${match.url}app`}
 							authUser={user}
@@ -98,7 +98,7 @@ class App extends Component {
 							<Route path={`/forgot-password`} component={forgotPassword} />
 							<Route path={`/error`} component={error} />
 							<Redirect to="/error" />
-						</HashRouter>
+						</Switch>
 						{/* <ColorSwitcher /> */}
 					</Fragment>
 				</IntlProvider>

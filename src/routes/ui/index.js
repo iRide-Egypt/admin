@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Redirect, Route, Switch, HashRouter } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 import alerts from './alerts';
 import badges from './badges';
@@ -29,7 +29,7 @@ export default class Ui extends Component {
         const { match } = this.props;
 
         return (
-            <HashRouter>
+            <Switch>
                 <Redirect exact from={`${match.url}/`} to={`${match.url}/alerts`} />
                 <Route path={`${match.url}/alerts`} component={alerts} />
                 <Route path={`${match.url}/badges`} component={badges} />
@@ -51,7 +51,7 @@ export default class Ui extends Component {
                 <Route path={`${match.url}/sortable`} component={sortable} />
                 <Redirect to="/error" />
 
-            </HashRouter>
+            </Switch>
         )
     };
 }
