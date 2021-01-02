@@ -6,7 +6,8 @@
       {
         "src":"/favicon.png",
         "type":"image/png",
-        "sizes": "219x234"
+        "sizes": "219x234",
+        "purpose": "any maskable"
       }
     ],
     "background_color": "#2d2d2d",
