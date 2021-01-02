@@ -4,12 +4,6 @@
     "theme_color": "#191a1b",
     "icons":[
       {
-        "src":"/favicon.png",
-        "type":"image/png",
-        "sizes": "219x234",
-        "purpose": "any maskable"
-      },
-      {
         "src":"/squarelogo.png",
         "type":"image/png",
         "sizes": "512x512",
