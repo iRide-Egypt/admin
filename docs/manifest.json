@@ -8,7 +8,14 @@
         "type":"image/png",
         "sizes": "219x234",
         "purpose": "any maskable"
+      },
+      {
+        "src":"/squarelogo.png",
+        "type":"image/png",
+        "sizes": "512x512",
+        "purpose": "any maskable"
       }
+
     ],
     "background_color": "#2d2d2d",
     "display": "fullscreen",
