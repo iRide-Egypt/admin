@@ -25,7 +25,7 @@ self.addEventListener('fetch', (event) => {
             })
     )
 });
-navigator.serviceWorker.register('/static/mod/practice/service-worker.js', { scope: '/' })
+navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
         .then(function (registration)
         {
           console.log('Service worker registered successfully');
@@ -33,7 +33,7 @@ navigator.serviceWorker.register('/static/mod/practice/service-worker.js', { sco
         {
           console.error('Error during service worker registration:', e);
         });
-        
+
 // Activate the SW
 self.addEventListener('activate', (event) => {
     const cacheWhitelist = [];
