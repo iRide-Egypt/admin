@@ -1,6 +1,7 @@
 {
     "name": "iRide Admin Tool",
-    "short_name": "iRAT",
+    "short_name": "iRide Admin",
+    "start_url": "/",
     "theme_color": "#191a1b",
     "icons": [
         {
@@ -30,6 +31,5 @@
         "admin",
         "tool"
     ],
-    "display": "fullscreen",
-    "start_url": "https://admin.irideegypt.com/"
+    "display": "standalone"
 }
