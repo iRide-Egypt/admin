@@ -9,14 +9,6 @@ export const localeOptions=[
     {id:'ar',name:'Arabic'},
 ];
 
-export const firebaseConfig2 = {
-    apiKey: "AIzaSyBBksq-Asxq2M4Ot-75X19IyrEYJqNBPcg",
-    authDomain: "gogo-react-login.firebaseapp.com",
-    databaseURL: "https://gogo-react-login.firebaseio.com",
-    projectId: "gogo-react-login",
-    storageBucket: "gogo-react-login.appspot.com",
-    messagingSenderId: "216495999563"
-};
 export const firebaseConfig = {
     apiKey: "AIzaSyBPwBVLQ7T7jixM7rX72cP_F0d2GoVZUHM",
     authDomain: "irideadmintool.firebaseapp.com",

@@ -191,22 +191,27 @@ class TopNav extends Component {
     switch (localStorage.getItem("user_id")) {
       case "NYnE9NoeKiT08U05AmK2ijPpcvV2":
         this.setState({ username: "Sohayb Hassan" });
-        this.setState({ profilePicture: "/assets/img/sohayb.jpg" });
+        this.setState({ profilePicture: "/assets/img/sohayb.webp" });
         break;
-      case "2jTImSqRJNOivjzGGLcDYmkE2lK2":
-        this.setState({ username: "Sohayb Hassan" });
-        this.setState({ profilePicture: "/assets/img/sohayb.jpg" });
-        break;
+      // case "2jTImSqRJNOivjzGGLcDYmkE2lK2":
+      //   this.setState({ username: "Sohayb Hassan" });
+      //   this.setState({ profilePicture: "/assets/img/sohayb.jpg" });
+      //   break;
       case "byN8fQxFkpaJJdi5OzfQhKywqiy2":
         this.setState({ username: "Moaz M. Ali" });
         this.setState({ profilePicture: "/assets/img/moaz.jpg" });
         break;
       case "yRGROLqSIZUyj2DSujoqfvLCqVV2":
         this.setState({ username: "Gohary" });
-        this.setState({ profilePicture: "/assets/img/gohary.jpg" });
+        this.setState({ profilePicture: "/assets/img/gohary.webp" });
         break;
-      default:
-        this.setState({ username: "Unknown" });
+      case "lqVlwvyBaDgp51R5GQEVAAB098C2":
+        this.setState({ username: "Yuta" });
+        this.setState({ profilePicture: "/assets/img/mai.jpg" });
+        break;
+        default:
+          this.setState({ username: "Guest" });
+          this.setState({ profilePicture: "/assets/img/irideback.jpg" });
         break;
     }
   };

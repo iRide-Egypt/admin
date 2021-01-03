@@ -25,7 +25,6 @@ class LoginLayout extends Component {
   handleEnter(e) {
     if (e.key === "Enter") {
       if (this.state.email !== "" && this.state.password !== "") {
-        console.log(this.props.loginUser(this.state, this.props.history));
         this.props.loginUser(this.state, this.props.history);
         setTimeout(() => {
           localStorage.getItem("user_id")

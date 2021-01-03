@@ -262,7 +262,7 @@ class Sidebar extends Component {
                     to="/app/dashboards/default"
                     onClick={e => this.openSubMenu(e, "dashboards")}
                   >
-                    <i className="iconsmind-Shop-4" />{" "}
+                    <i className="iconsmind-Computer" />{" "}
                     <IntlMessages id="menu.dashboards" />
                   </NavLink>
                 </NavItem>
@@ -278,11 +278,11 @@ class Sidebar extends Component {
                     to="/app/applications"
                     onClick={e => this.openSubMenu(e, "applications")}
                   >
-                    <i className="iconsmind-Air-Balloon" />{" "}
+                    <i className="iconsmind-Android" />{" "}
                     <IntlMessages id="menu.applications" />
                   </NavLink>
                 </NavItem>
-                <NavItem
+                {/* <NavItem
                   className={classnames({
                     active: ((this.state.selectedParentMenu == "layouts" && this.state.viewingParentMenu=="" ) || this.state.viewingParentMenu=="layouts")
                   })}
@@ -294,8 +294,8 @@ class Sidebar extends Component {
                     <i className="iconsmind-Digital-Drawing" />{" "}
                     <IntlMessages id="menu.layouts" />
                   </NavLink>
-                </NavItem>
-                <NavItem
+                </NavItem> */}
+                {/* <NavItem
                   className={classnames({
                     active: ((this.state.selectedParentMenu == "ui" && this.state.viewingParentMenu=="" )|| this.state.viewingParentMenu=="ui")
                   })}
@@ -307,7 +307,7 @@ class Sidebar extends Component {
                     <i className="iconsmind-Pantone" />{" "}
                     <IntlMessages id="menu.ui" />
                   </NavLink>
-                </NavItem>
+                </NavItem> */}
                 {/* <NavItem
                   className={classnames({
                     active: ((this.state.selectedParentMenu == "landingpage" && this.state.viewingParentMenu=="" )|| this.state.viewingParentMenu=="landingpage")
@@ -375,8 +375,20 @@ class Sidebar extends Component {
                     <IntlMessages id="menu.content" />
                   </NavLink>
                 </NavItem>
+                <NavItem>
+                  <NavLink to="/app/layouts/thumb-list">
+                    <i className="simple-icon-list" />{" "}
+                    <IntlMessages id="menu.thumb-list" />
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink to="/app/layouts/details">
+                    <i className="simple-icon-book-open" />{" "}
+                    <IntlMessages id="menu.details" />
+                  </NavLink>
+                </NavItem>
               </Nav>
-              <Nav
+              {/* <Nav
                 className={classnames({
                   "d-block": ((this.state.selectedParentMenu == "layouts" && this.state.viewingParentMenu=="" )|| this.state.viewingParentMenu=="layouts")
                 })}
@@ -436,7 +448,7 @@ class Sidebar extends Component {
                     <IntlMessages id="menu.error" />
                   </a>
                 </NavItem>
-              </Nav>
+              </Nav> */}
               <Nav
                 className={classnames({
                   "d-block": ((this.state.selectedParentMenu == "applications" && this.state.viewingParentMenu=="" )|| this.state.viewingParentMenu=="applications")
@@ -462,7 +474,7 @@ class Sidebar extends Component {
                   </NavLink>
                 </NavItem> */}
               </Nav>
-              <Nav
+              {/* <Nav
                 className={classnames({
                   "d-block": ((this.state.selectedParentMenu == "ui" && this.state.viewingParentMenu=="" )|| this.state.viewingParentMenu=="ui")
                 })}
@@ -576,7 +588,7 @@ class Sidebar extends Component {
                     <IntlMessages id="menu.sortable" />
                   </NavLink>
                 </NavItem>
-              </Nav>
+              </Nav> */}
               {/* <Nav
                 className={classnames({
                   "d-block": ((this.state.selectedParentMenu == "landingpage" && this.state.viewingParentMenu=="" )|| this.state.viewingParentMenu=="landingpage")
