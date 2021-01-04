@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from "react";
 import IntlMessages from "Util/IntlMessages";
-import { injectIntl} from 'react-intl';
+import { injectIntl } from "react-intl";
 import {
   Row,
   Card,
@@ -20,7 +20,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Input
+  Input,
 } from "reactstrap";
 import Select from "react-select";
 import CustomSelectInput from "Components/CustomSelectInput";
@@ -39,9 +39,11 @@ import {
   getTodoListWithOrder,
   getTodoListSearch,
   addTodoItem,
-  selectedTodoItemsChange
+  selectedTodoItemsChange,
 } from "Redux/actions";
 
+import { db } from "../../firebase";
+import firebase from "firebase";
 class TodoApplication extends Component {
   constructor(props) {
     super(props);
@@ -59,30 +61,26 @@ class TodoApplication extends Component {
       label: {},
       category: {},
       status: "PENDING",
-      displayOptionsIsOpen:false
+      displayOptionsIsOpen: false,
     };
   }
 
   componentDidMount() {
     this.props.getTodoList();
   }
-
   toggleDisplayOptions() {
     this.setState({ displayOptionsIsOpen: !this.state.displayOptionsIsOpen });
   }
-
   toggleModal() {
     this.setState({
-      modalOpen: !this.state.modalOpen
+      modalOpen: !this.state.modalOpen,
     });
   }
-
   toggleSplit() {
-    this.setState(prevState => ({
-      dropdownSplitOpen: !prevState.dropdownSplitOpen
+    this.setState((prevState) => ({
+      dropdownSplitOpen: !prevState.dropdownSplitOpen,
     }));
   }
-
   addFilter(column, value) {
     this.props.getTodoListWithFilter(column, value);
   }
@@ -96,7 +94,7 @@ class TodoApplication extends Component {
       label: this.state.label.value,
       labelColor: this.state.label.color,
       category: this.state.category.value,
-      status: this.state.status
+      status: this.state.status,
     };
     this.props.addTodoItem(newItem);
     this.toggleModal();
@@ -105,38 +103,66 @@ class TodoApplication extends Component {
       detail: "",
       label: {},
       category: {},
-      status: "PENDING"
+      status: "PENDING",
     });
   }
+  deleteItem() {
+    let selectedItems = Object.assign([], this.props.todoApp.selectedItems);
 
+    const docRef = db.collection("app").doc("todo");
+    const { todoItems } = this.props.todoApp;
+
+    console.log(selectedItems);
+
+    for (let i = 0; i < todoItems.length; i++) {
+      console.log("loop", todoItems[selectedItems[i]]);
+      // docRef
+      //   .update({
+      //     todos: firebase.firestore.FieldValue.arrayRemove(
+      //       todoItems[selectedItems[i]]
+      //     ),
+      //   })
+      //   .then((e) => {
+      //     console.log("deleted:", selectedItems);
+      //     // this.props.getTodoList();
+      //   })
+      //   .catch((err) => {
+      //     console.log("error deleting items");
+      //   });
+    }
+
+    // fb.usersCollection.doc(docId).update({
+    //   posts: posts.filter(post => post.id !== deleteId);
+    // })
+    console.log("delete button:", selectedItems);
+  }
   handleKeyPress(e) {
     if (e.key === "Enter") {
       this.props.getTodoListSearch(e.target.value);
     }
   }
-
   handleCheckChange(event, id) {
     if (this.state.lastChecked == null) {
       this.setState({
-        lastChecked: id
+        lastChecked: id,
       });
     }
 
     let selectedItems = Object.assign([], this.props.todoApp.selectedItems);
     if (selectedItems.includes(id)) {
-      selectedItems = selectedItems.filter(x => x !== id);
+      selectedItems = selectedItems.filter((x) => x !== id);
     } else {
       selectedItems.push(id);
     }
     this.props.selectedTodoItemsChange(selectedItems);
-
+    // console.log(selectedItems);
     if (event.shiftKey) {
       var items = this.props.todoApp.todoItems;
       var start = this.getIndex(id, items, "id");
       var end = this.getIndex(this.state.lastChecked, items, "id");
       items = items.slice(Math.min(start, end), Math.max(start, end) + 1);
       selectedItems.push(
-        ...items.map(item => {
+        ...items.map((item) => {
           return item.id;
         })
       );
@@ -154,12 +180,11 @@ class TodoApplication extends Component {
         this.props.selectedTodoItemsChange([]);
       } else {
         this.props.selectedTodoItemsChange(
-          this.props.todoApp.todoItems.map(x => x.id)
+          this.props.todoApp.todoItems.map((x) => x.id)
         );
       }
     }
   }
-
   getIndex(value, arr, prop) {
     for (var i = 0; i < arr.length; i++) {
       if (arr[i][prop] === value) {
@@ -180,9 +205,9 @@ class TodoApplication extends Component {
       labels,
       orderColumns,
       categories,
-      selectedItems
+      selectedItems,
     } = this.props.todoApp;
-    const {messages} = this.props.intl;
+    const { messages } = this.props.intl;
     return (
       <Fragment>
         <Row className="app-row survey-app">
@@ -218,7 +243,7 @@ class TodoApplication extends Component {
                     <Input
                       type="text"
                       defaultValue={this.state.title}
-                      onChange={event => {
+                      onChange={(event) => {
                         this.setState({ title: event.target.value });
                       }}
                     />
@@ -228,7 +253,7 @@ class TodoApplication extends Component {
                     <Input
                       type="textarea"
                       defaultValue={this.state.detail}
-                      onChange={event => {
+                      onChange={(event) => {
                         this.setState({ detail: event.target.value });
                       }}
                     />
@@ -237,7 +262,7 @@ class TodoApplication extends Component {
                       <IntlMessages id="todo.category" />
                     </Label>
                     <Select
-                    components={{ Input:  CustomSelectInput}}
+                      components={{ Input: CustomSelectInput }}
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
@@ -245,7 +270,7 @@ class TodoApplication extends Component {
                         return { label: x, value: x, key: i };
                       })}
                       value={this.state.category}
-                      onChange={val => {
+                      onChange={(val) => {
                         this.setState({ category: val });
                       }}
                     />
@@ -253,7 +278,7 @@ class TodoApplication extends Component {
                       <IntlMessages id="todo.label" />
                     </Label>
                     <Select
-                    components={{ Input:  CustomSelectInput}}
+                      components={{ Input: CustomSelectInput }}
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
@@ -262,11 +287,11 @@ class TodoApplication extends Component {
                           label: x.label,
                           value: x.label,
                           key: i,
-                          color: x.color
+                          color: x.color,
                         };
                       })}
                       value={this.state.label}
-                      onChange={val => {
+                      onChange={(val) => {
                         this.setState({ label: val });
                       }}
                     />
@@ -280,10 +305,12 @@ class TodoApplication extends Component {
                       name="customRadio"
                       label="COMPLETED"
                       checked={this.state.status === "COMPLETED"}
-                      onChange={event => {
+                      onChange={(event) => {
                         this.setState({
                           status:
-                            event.target.value == "on" ? "COMPLETED" : "PENDING"
+                            event.target.value == "on"
+                              ? "COMPLETED"
+                              : "PENDING",
                         });
                       }}
                     />
@@ -293,10 +320,12 @@ class TodoApplication extends Component {
                       name="customRadio2"
                       label="PENDING"
                       checked={this.state.status === "PENDING"}
-                      onChange={event => {
+                      onChange={(event) => {
                         this.setState({
                           status:
-                            event.target.value != "on" ? "COMPLETED" : "PENDING"
+                            event.target.value != "on"
+                              ? "COMPLETED"
+                              : "PENDING",
                         });
                       }}
                     />
@@ -309,7 +338,11 @@ class TodoApplication extends Component {
                     >
                       <IntlMessages id="todo.cancel" />
                     </Button>
-                    <Button color="primary" outline="light" onClick={() => this.addNetItem()}>
+                    <Button
+                      color="primary"
+                      outline="light"
+                      onClick={() => this.addNetItem()}
+                    >
                       <IntlMessages id="todo.submit" />
                     </Button>{" "}
                   </ModalFooter>
@@ -352,7 +385,7 @@ class TodoApplication extends Component {
                     className="dropdown-toggle-split pl-2 pr-2"
                   />
                   <DropdownMenu right>
-                    <DropdownItem>
+                    <DropdownItem onClick={() => this.deleteItem()}>
                       <IntlMessages id="todo.action" />
                     </DropdownItem>
                     <DropdownItem>
@@ -398,13 +431,13 @@ class TodoApplication extends Component {
                     </DropdownMenu>
                   </UncontrolledDropdown>
                   <div className="search-sm d-inline-block float-md-left mr-1 mb-1 align-top">
-                  <input
+                    <input
                       type="text"
                       name="keyword"
                       id="search"
                       placeholder={messages["menu.search"]}
                       defaultValue={searchKeyword}
-                      onKeyPress={e => this.handleKeyPress(e)}
+                      onKeyPress={(e) => this.handleKeyPress(e)}
                     />
                   </div>
                 </div>
@@ -430,8 +463,15 @@ class TodoApplication extends Component {
                                     ? "simple-icon-check heading-icon"
                                     : "simple-icon-refresh heading-icon"
                                 }`}
+                                style={
+                                  item.status === "COMPLETED"
+                                    ? { color: "green" }
+                                    : null
+                                }
                               />
-                              <span className="align-middle d-inline-block">{item.title}</span>
+                              <span className="align-middle d-inline-block">
+                                {item.title}
+                              </span>
                             </NavLink>
                             <p className="mb-1 text-muted text-small w-15 w-xs-100">
                               {item.category}
@@ -455,19 +495,17 @@ class TodoApplication extends Component {
                                   ? selectedItems.includes(item.id)
                                   : false
                               }
-                              onClick={event =>
+                              onClick={(event) =>
                                 this.handleCheckChange(event, item.id)
                               }
                               label=""
                             />
                           </div>
                         </div>
-                          <div className="card-body pt-1">
-                            <p className="mb-0">{item.detail}</p>
-                          </div>
-                        
+                        <div className="card-body pt-1">
+                          <p className="mb-0">{item.detail}</p>
+                        </div>
                       </Card>
-                      
                     </Colxx>
                   );
                 })
@@ -488,7 +526,7 @@ class TodoApplication extends Component {
               </p>
               <ul className="list-unstyled mb-5">
                 <NavItem className={classnames({ active: !filter })}>
-                  <NavLink to="#" onClick={e => this.addFilter("", "")}>
+                  <NavLink to="#" onClick={(e) => this.addFilter("", "")}>
                     <i className="simple-icon-reload" />
                     <IntlMessages id="todo.all-tasks" />
                     <span className="float-right">
@@ -501,18 +539,18 @@ class TodoApplication extends Component {
                     active:
                       filter &&
                       filter.column === "status" &&
-                      filter.value === "PENDING"
+                      filter.value === "PENDING",
                   })}
                 >
                   <NavLink
                     to="#"
-                    onClick={e => this.addFilter("status", "PENDING")}
+                    onClick={(e) => this.addFilter("status", "PENDING")}
                   >
                     <i className="simple-icon-refresh" />
                     <IntlMessages id="todo.pending-tasks" />
                     <span className="float-right">
                       {loading &&
-                        todoItems.filter(x => x.status === "PENDING").length}
+                        todoItems.filter((x) => x.status === "PENDING").length}
                     </span>
                   </NavLink>
                 </NavItem>
@@ -521,18 +559,19 @@ class TodoApplication extends Component {
                     active:
                       filter &&
                       filter.column === "status" &&
-                      filter.value === "COMPLETED"
+                      filter.value === "COMPLETED",
                   })}
                 >
                   <NavLink
                     to="#"
-                    onClick={e => this.addFilter("status", "COMPLETED")}
+                    onClick={(e) => this.addFilter("status", "COMPLETED")}
                   >
                     <i className="simple-icon-check" />
                     <IntlMessages id="todo.completed-tasks" />
                     <span className="float-right">
                       {loading &&
-                        todoItems.filter(x => x.status === "COMPLETED").length}
+                        todoItems.filter((x) => x.status === "COMPLETED")
+                          .length}
                     </span>
                   </NavLink>
                 </NavItem>
@@ -544,9 +583,7 @@ class TodoApplication extends Component {
                 {categories.map((c, index) => {
                   return (
                     <NavItem key={index}>
-                      <div
-                        onClick={e => this.addFilter("category", c)}
-                      >
+                      <div onClick={(e) => this.addFilter("category", c)}>
                         <div className="custom-control custom-radio">
                           <input
                             type="radio"
@@ -564,16 +601,16 @@ class TodoApplication extends Component {
                   );
                 })}
               </ul> */}
-              {/* <p className="text-muted text-small">
+              <p className="text-muted text-small">
                 <IntlMessages id="todo.labels" />
-              </p> */}
-              {/* <div>
+              </p>
+              <div>
                 {labels.map((l, index) => {
                   return (
                     <p className="d-sm-inline-block mb-1" key={index}>
                       <NavLink
                         to="#"
-                        onClick={e => this.addFilter("label", l.label)}
+                        onClick={(e) => this.addFilter("label", l.label)}
                       >
                         <Badge
                           className="mb-1"
@@ -592,7 +629,7 @@ class TodoApplication extends Component {
                     </p>
                   );
                 })}
-              </div> */}
+              </div>
             </div>
           </PerfectScrollbar>
         </ApplicationMenu>
@@ -602,17 +639,16 @@ class TodoApplication extends Component {
 }
 const mapStateToProps = ({ todoApp }) => {
   return {
-    todoApp
+    todoApp,
   };
 };
-export default injectIntl(connect(
-  mapStateToProps,
-  {
+export default injectIntl(
+  connect(mapStateToProps, {
     getTodoList,
     getTodoListWithFilter,
     getTodoListWithOrder,
     getTodoListSearch,
     addTodoItem,
-    selectedTodoItemsChange
-  }
-)(TodoApplication));
+    selectedTodoItemsChange,
+  })(TodoApplication)
+);

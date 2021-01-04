@@ -230,7 +230,7 @@ module.exports = {
   "todo.title": "Title",
   "todo.detail": "Detail",
   "todo.category": "Category",
-  "todo.label": "Label",
+  "todo.label": "Assign To",
   "todo.status": "Status",
   "todo.cancel": "Cancel",
   "todo.submit": "Submit",
@@ -242,7 +242,7 @@ module.exports = {
   "todo.pending-tasks": "Pending Tasks",
   "todo.completed-tasks": "Completed Tasks",
   "todo.categories": "Categories",
-  "todo.labels": "Labels",
+  "todo.labels": "Assign To",
 
   /* 07.UI */
 

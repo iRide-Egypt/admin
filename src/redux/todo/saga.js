@@ -1,4 +1,3 @@
-import axios from "axios";
 import { all, call, fork, put, takeEvery } from "redux-saga/effects";
 import { getDateWithFormat } from "Util/Utils";
 
@@ -11,16 +10,34 @@ import {
   addTodoItemError
 } from "./actions";
 
-import todoData from "Data/todos.json";
+// import todoData from "Data/todos.json";
+import { db } from "../../firebase";
+import firebase from "firebase";
+
+const docRef = db.collection("app").doc("todo");
+
+let todoData = [];
 
 const getTodoListRequest = async () => {
+  await docRef
+    .get()
+    .then(function (doc) {
+      if (doc.exists) {
+        console.log(doc.data().todos);
+        todoData = doc.data().todos.reverse();
+      } else {
+        console.log("No such document!");
+      }
+    })
+    .catch(function (error) {
+      console.log("Error getting document:", error);
+    });
+
   return await new Promise((success, fail) => {
-    setTimeout(() => {
-      success(todoData.data);
-    }, 1000);
+    success(todoData);
   })
-    .then(response => response)
-    .catch(error => error);
+    .then((response) => response)
+    .catch((error) => error);
 };
 
 function* getTodoListItems() {
@@ -32,18 +49,27 @@ function* getTodoListItems() {
   }
 }
 
-const addTodoItemRequest = async item => {
-  let items = todoData.data;
-  item.id = items.length + 1;
+const addTodoItemRequest = async (item) => {
+  let items = todoData;
+  item.id = (items.length + 1).toString();
   item.createDate = getDateWithFormat();
   items.splice(0, 0, item);
+  // console.log("item:",item)
+
   return await new Promise((success, fail) => {
-    setTimeout(() => {
-      success(items);
-    }, 1000);
+    docRef
+      .update({
+        todos: firebase.firestore.FieldValue.arrayUnion(item),
+      })
+      .then((e) => {
+        success(items);
+      })
+      .catch((err) => {
+        return err;
+      });
   })
-    .then(response => response)
-    .catch(error => error);
+    .then((response) => response)
+    .catch((error) => error);
 };
 
 function* addTodoItem({ payload }) {
@@ -62,6 +88,7 @@ export function* watchGetList() {
 export function* wathcAddItem() {
   yield takeEvery(TODO_ADD_ITEM, addTodoItem);
 }
+
 
 export default function* rootSaga() {
   yield all([fork(watchGetList), fork(wathcAddItem)]);

@@ -20,17 +20,17 @@ const INIT_STATE = {
 	orderColumn: null,
 	loading: false,
 	labels: [
-		{ label: "EDUCATION", color: "secondary" },
-		{ label: "NEW FRAMEWORK", color: "primary" },
-		{ label: "PERSONAL", color: "info" }
+		{ label: "Sohayb Hassan", color: "danger" },
+		{ label: "Gohary", color: "warning" },
+		{ label: "Moaz M.", color: "info" }
 	],
 	orderColumns: [
 		{ column: "title", label: "Title" },
 		{ column: "category", label: "Category" },
 		{ column: "status", label: "Status" },
-		{ column: "label", label: "Label" },
+		{ column: "label", label: "Assign To" },
 	],
-	categories: ["Flexbox", "Sass", "React"],
+	categories: ["General", "Design", "Posts"],
 	selectedItems: []
 };
 
