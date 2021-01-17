@@ -52,14 +52,15 @@ class TodoApplication extends Component {
     this.toggleDisplayOptions = this.toggleDisplayOptions.bind(this);
 
     this.state = {
+   
       dropdownSplitOpen: false,
       modalOpen: false,
       lastChecked: null,
 
       title: "",
       detail: "",
-      label: {},
-      category: {},
+      label: {label: "Anybody", value: "Anybody", key: 0},
+      category: {label: "General", value: "General", key: 0},
       status: "PENDING",
       displayOptionsIsOpen: false,
     };
@@ -88,12 +89,16 @@ class TodoApplication extends Component {
     this.props.getTodoListWithOrder(column);
   }
   addNetItem() {
+    if(this.state.title===""||this.state.title===" "){
+      this.setState({isError:true,errorMessage:"Title is missing!"})
+      return;
+    }
     const newItem = {
       title: this.state.title,
       detail: this.state.detail,
-      label: this.state.label.value,
-      labelColor: this.state.label.color,
-      category: this.state.category.value,
+      label: this.state.label.value||"Anybody",
+      labelColor: this.state.label.color||"light",
+      category: this.state.category.value||"General",
       status: this.state.status,
     };
     this.props.addTodoItem(newItem);
@@ -101,8 +106,8 @@ class TodoApplication extends Component {
     this.setState({
       title: "",
       detail: "",
-      label: {},
-      category: {},
+      label: {label: "Anybody", value: "Anybody", key: 0},
+      category: {label: "General", value: "General", key: 0},
       status: "PENDING",
     });
   }
@@ -310,10 +315,10 @@ class TodoApplication extends Component {
                       options={categories.map((x, i) => {
                         return { label: x, value: x, key: i };
                       })}
-                      defaultValue={{ label: "Select Category", value: "General" }}
                       value={this.state.category}
                       onChange={(val) => {
                         this.setState({ category: val });
+                        console.log(val)
                       }}
                     />
                     <Label className="mt-4">
@@ -332,7 +337,6 @@ class TodoApplication extends Component {
                           color: x.color,
                         };
                       })}
-                      defaultValue={{ label: "Select User", value: "Anybody" }}
                       value={this.state.label}
                       onChange={(val) => {
                         this.setState({ label: val });
@@ -373,6 +377,7 @@ class TodoApplication extends Component {
                       }}
                     />
                   </ModalBody>
+                  {this.state.isError&&<p className="text-center text-danger">{this.state.errorMessage}</p>}
                   <ModalFooter>
                     <Button
                       color="secondary"
