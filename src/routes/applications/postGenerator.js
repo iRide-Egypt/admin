@@ -1,26 +1,34 @@
 import React, { Component, Fragment } from "react";
 import IntlMessages from "Util/IntlMessages";
-import { injectIntl } from "react-intl";
+import { injectIntl} from 'react-intl';
 import {
   Row,
   Card,
   CardBody,
+  Nav,
   NavItem,
   Button,
   UncontrolledDropdown,
   DropdownToggle,
   DropdownItem,
   DropdownMenu,
+  TabContent,
+  TabPane,
   Badge,
   Collapse,
   ButtonDropdown,
+  CardSubtitle,
+  CardTitle,
+  CardImg,
+  CardText,
+  FormGroup,
   CustomInput,
   Label,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Input,
+  Input
 } from "reactstrap";
 import Select from "react-select";
 import CustomSelectInput from "Components/CustomSelectInput";
@@ -34,17 +42,15 @@ import ApplicationMenu from "Components/ApplicationMenu";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { connect } from "react-redux";
 import {
-  getTodoList,
-  getTodoListWithFilter,
-  getTodoListWithOrder,
-  getTodoListSearch,
-  addTodoItem,
-  selectedTodoItemsChange,
+  getSurveyList,
+  getSurveyListWithFilter,
+  getSurveyListWithOrder,
+  getSurveyListSearch,
+  addSurveyItem,
+  selectedSurveyItemsChange
 } from "Redux/actions";
 
-import { db } from "../../firebase";
-import firebase from "firebase";
-class TodoApplication extends Component {
+class PostGenerator extends Component {
   constructor(props) {
     super(props);
     this.toggleSplit = this.toggleSplit.bind(this);
@@ -57,175 +63,117 @@ class TodoApplication extends Component {
       lastChecked: null,
 
       title: "",
-      detail: "",
       label: {},
       category: {},
-      status: "PENDING",
-      displayOptionsIsOpen: false,
+      status: "ACTIVE",
+      displayOptionsIsOpen: false
     };
   }
-
   componentDidMount() {
-    this.props.getTodoList();
+    // this.props.getSurveyList();
   }
+
   toggleDisplayOptions() {
     this.setState({ displayOptionsIsOpen: !this.state.displayOptionsIsOpen });
   }
+
   toggleModal() {
     this.setState({
-      modalOpen: !this.state.modalOpen,
+      modalOpen: !this.state.modalOpen
     });
   }
+
   toggleSplit() {
-    this.setState((prevState) => ({
-      dropdownSplitOpen: !prevState.dropdownSplitOpen,
+    this.setState(prevState => ({
+      dropdownSplitOpen: !prevState.dropdownSplitOpen
     }));
   }
+
   addFilter(column, value) {
-    this.props.getTodoListWithFilter(column, value);
+    this.props.getSurveyListWithFilter(column, value);
   }
   changeOrderBy(column) {
-    this.props.getTodoListWithOrder(column);
+    this.props.getSurveyListWithOrder(column);
   }
   addNetItem() {
     const newItem = {
       title: this.state.title,
-      detail: this.state.detail,
       label: this.state.label.value,
       labelColor: this.state.label.color,
       category: this.state.category.value,
-      status: this.state.status,
+      status: this.state.status
     };
-    this.props.addTodoItem(newItem);
+    this.props.addSurveyItem(newItem);
     this.toggleModal();
     this.setState({
       title: "",
-      detail: "",
       label: {},
       category: {},
-      status: "PENDING",
+      status: "ACTIVE"
     });
   }
-  deleteItem() {
-    let selectedItems = Object.assign([], this.props.todoApp.selectedItems);
 
-    const docRef = db.collection("app").doc("todo");
-    const { todoItems } = this.props.todoApp;
-
-    console.log(selectedItems);
-
-    for (let i = 0; i < todoItems.length; i++) {
-      console.log("loop", todoItems[selectedItems[i]]);
-      // docRef
-      //   .update({
-      //     todos: firebase.firestore.FieldValue.arrayRemove(
-      //       todoItems[selectedItems[i]]
-      //     ),
-      //   })
-      //   .then((e) => {
-      //     console.log("deleted:", selectedItems);
-      //     // this.props.getTodoList();
-      //   })
-      //   .catch((err) => {
-      //     console.log("error deleting items");
-      //   });
-    }
-
-    // fb.usersCollection.doc(docId).update({
-    //   posts: posts.filter(post => post.id !== deleteId);
-    // })
-    console.log("delete button:", selectedItems);
-  }
-  deleteThisItem(id) {
-    const item = this.props.todoApp.todoItems.filter((e) => e.id === id)[0];
-    const docRef = db.collection("app").doc("todo");
-
-    docRef
-      .update({
-        todos: firebase.firestore.FieldValue.arrayRemove(item),
-      })
-      .then(() => {
-        this.props.getTodoList();
-        this.forceUpdate();
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }
-  changeItemStatus(id) {
-    const item = this.props.todoApp.todoItems.filter((e) => e.id === id)[0];
-    const docRef = db.collection("app").doc("todo");
-
-    docRef
-      .update({
-        todos: firebase.firestore.FieldValue.arrayRemove(item),
-      })
-      .then(() => {
-        item.status === "COMPLETED"
-          ? (item.status = "PENDING")
-          : (item.status = "COMPLETED");
-
-        docRef.update({
-          todos: firebase.firestore.FieldValue.arrayUnion(item),
-        });
-        this.forceUpdate();
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }
   handleKeyPress(e) {
     if (e.key === "Enter") {
-      this.props.getTodoListSearch(e.target.value);
+      this.props.getSurveyListSearch(e.target.value);
     }
   }
-  handleOnChangeInput(e){
-    this.props.getTodoListSearch(e.target.value);
-  }
+
   handleCheckChange(event, id) {
     if (this.state.lastChecked == null) {
       this.setState({
-        lastChecked: id,
+        lastChecked: id
       });
     }
 
-    let selectedItems = Object.assign([], this.props.todoApp.selectedItems);
+    let selectedItems = Object.assign(
+      [],
+      this.props.surveyListApp.selectedItems
+    );
     if (selectedItems.includes(id)) {
-      selectedItems = selectedItems.filter((x) => x !== id);
+      selectedItems = selectedItems.filter(x => x !== id);
     } else {
       selectedItems.push(id);
     }
-    this.props.selectedTodoItemsChange(selectedItems);
-    // console.log(selectedItems);
+    this.props.selectedSurveyItemsChange(selectedItems);
+
     if (event.shiftKey) {
-      var items = this.props.todoApp.todoItems;
+      var items = this.props.surveyListApp.surveyItems;
       var start = this.getIndex(id, items, "id");
       var end = this.getIndex(this.state.lastChecked, items, "id");
       items = items.slice(Math.min(start, end), Math.max(start, end) + 1);
       selectedItems.push(
-        ...items.map((item) => {
+        ...items.map(item => {
           return item.id;
         })
       );
       selectedItems = Array.from(new Set(selectedItems));
-      this.props.selectedTodoItemsChange(selectedItems);
+      this.props.selectedSurveyItemsChange(selectedItems);
     }
     return;
   }
   handleChangeSelectAll() {
-    if (this.props.todoApp.loading) {
+    if (this.props.surveyListApp.loading) {
       if (
-        this.props.todoApp.selectedItems.length >=
-        this.props.todoApp.todoItems.length
+        this.props.surveyListApp.selectedItems.length >=
+        this.props.surveyListApp.surveyItems.length
       ) {
-        this.props.selectedTodoItemsChange([]);
+        this.props.selectedSurveyItemsChange([]);
       } else {
-        this.props.selectedTodoItemsChange(
-          this.props.todoApp.todoItems.map((x) => x.id)
+        this.props.selectedSurveyItemsChange(
+          this.props.surveyListApp.surveyItems.map(x => x.id)
         );
       }
     }
   }
+  textToClipboard (text) {
+    var dummy = document.createElement("textarea");
+    document.body.appendChild(dummy);
+    dummy.value = text;
+    dummy.select();
+    document.execCommand("copy");
+    document.body.removeChild(dummy);
+}
   getIndex(value, arr, prop) {
     for (var i = 0; i < arr.length; i++) {
       if (arr[i][prop] === value) {
@@ -235,9 +183,44 @@ class TodoApplication extends Component {
     return -1;
   }
   render() {
+      const surveyItems= [
+        {
+          // "title": "Haram",
+          "category" : "Paid",
+          "createDate" : "22.08.2018",
+          "detail" : `ي ظل وباء كورونا المنتشر أكيد نفسك تخرج وتتفسح وفي نفس الوقت محتاج تحافظ على صحتك، عشان كده فريق الفروسية الأول في مصر هيوفرلك تجربة جديدة في مكان مفتوح مع الاتزام بالاجراءات الاحترازية.☀️
+          الفريق حاليًا بينظم رحلات بالخيول في (الهرم - سقارة - الفيوم - دهب)، الجديد كمان أن مش لازم تكون بتعرف تركب خيل خالص، لتفاصيل أكثر سيبلنا كومنت وهنرد عليك. 😄🌸`,
+          "status" : "ACTIVE",
+          "label": "General",
+          "labelColor": "light",
+          "id": 1
+        },
+        {
+          // "title": "Dahab",
+          "createDate" : "22.09.2018",
+          "status" : "ACTIVE",
+          "detail":`مش ناوي تغير صورة البروفايل اللي بقالك سنة حاططها؟ 😌
+          طب مش ناوي تغير مودك وتجرب حاجه جديدة؟ 😇
+          عيش مع آي رايد يوم مختلف مع حصانك ومع ناس كلها بتحب الخيل زيك... ومتنساش الفوتوسيشن الاحترافي اللي بيقدمه الفريق مجانًا. 📸 🐴`,
+          "label": "Dahab",
+          "labelColor": "secondary",
+          "id": 2
+        },
+        {
+          // "title": "Fayyoum",
+          "createDate" : "15.09.2018",
+          "detail":`أنا كنت زيك كده باخد الخطوة في 10 سنين، طب أطلع مع آي رايد الأسبوع ده؟ 🤔 لأ اللي بعده... 😌
+          براحتك، أحنا بس حابين نفكرك أن رايد يوم الجمعة اكتملت... بس لسه فرصتك مراحتش أحجز معانا يوم السبت اللي جي وسألنا علي الخصم على ثمن الإيفينت اعمل كومنت وهنبعتلك التفاصيل.
+          #فارس_في_كل_بيت_مصري`,
+          "status" : "COMPLETED",
+          "label": "Fayyoum",
+          "labelColor": "info",
+          "id": 3
+        }
+      ]
     const {
-      allTodoItems,
-      todoItems,
+      allSurveyItems,
+    
       error,
       filter,
       searchKeyword,
@@ -246,28 +229,27 @@ class TodoApplication extends Component {
       labels,
       orderColumns,
       categories,
-      selectedItems,
-    } = this.props.todoApp;
-    const { messages } = this.props.intl;
+      selectedItems
+    } = this.props.surveyListApp;
+    const {messages} = this.props.intl;
     return (
       <Fragment>
         <Row className="app-row survey-app">
           <Colxx xxs="12">
             <div className="mb-2">
               <h1>
-                <IntlMessages id="menu.todo" />
+                <IntlMessages id="menu.postgenerator" />
               </h1>
 
               <div className="float-sm-right">
-                <Button
+                {/* <Button
                   color="primary"
-                  outline="light"
                   size="lg"
-                  className="top-right-button"
+                  className="top-right-button mr-1"
                   onClick={this.toggleModal}
                 >
-                  <IntlMessages id="todo.add-new" />
-                </Button>
+                  <IntlMessages id="survey.add-new" />
+                </Button> */}
                 <Modal
                   isOpen={this.state.modalOpen}
                   toggle={this.toggleModal}
@@ -275,32 +257,22 @@ class TodoApplication extends Component {
                   backdrop="static"
                 >
                   <ModalHeader toggle={this.toggleModal}>
-                    <IntlMessages id="todo.add-new-title" />
+                    <IntlMessages id="survey.add-new-title" />
                   </ModalHeader>
                   <ModalBody>
                     <Label className="mt-4">
-                      <IntlMessages id="todo.title" />
+                      <IntlMessages id="survey.title" />
                     </Label>
                     <Input
                       type="text"
                       defaultValue={this.state.title}
-                      onChange={(event) => {
+                      onChange={event => {
                         this.setState({ title: event.target.value });
-                      }}
-                    />
-                    <Label className="mt-4">
-                      <IntlMessages id="todo.detail" />
-                    </Label>
-                    <Input
-                      type="textarea"
-                      defaultValue={this.state.detail}
-                      onChange={(event) => {
-                        this.setState({ detail: event.target.value });
                       }}
                     />
 
                     <Label className="mt-4">
-                      <IntlMessages id="todo.category" />
+                      <IntlMessages id="survey.category" />
                     </Label>
                     <Select
                       components={{ Input: CustomSelectInput }}
@@ -311,12 +283,12 @@ class TodoApplication extends Component {
                         return { label: x, value: x, key: i };
                       })}
                       value={this.state.category}
-                      onChange={(val) => {
+                      onChange={val => {
                         this.setState({ category: val });
                       }}
                     />
                     <Label className="mt-4">
-                      <IntlMessages id="todo.label" />
+                      <IntlMessages id="survey.label" />
                     </Label>
                     <Select
                       components={{ Input: CustomSelectInput }}
@@ -328,17 +300,17 @@ class TodoApplication extends Component {
                           label: x.label,
                           value: x.label,
                           key: i,
-                          color: x.color,
+                          color: x.color
                         };
                       })}
                       value={this.state.label}
-                      onChange={(val) => {
+                      onChange={val => {
                         this.setState({ label: val });
                       }}
                     />
 
                     <Label className="mt-4">
-                      <IntlMessages id="todo.status" />
+                      <IntlMessages id="survey.status" />
                     </Label>
                     <CustomInput
                       type="radio"
@@ -346,12 +318,10 @@ class TodoApplication extends Component {
                       name="customRadio"
                       label="COMPLETED"
                       checked={this.state.status === "COMPLETED"}
-                      onChange={(event) => {
+                      onChange={event => {
                         this.setState({
                           status:
-                            event.target.value == "on"
-                              ? "COMPLETED"
-                              : "PENDING",
+                            event.target.value == "on" ? "COMPLETED" : "ACTIVE"
                         });
                       }}
                     />
@@ -359,14 +329,12 @@ class TodoApplication extends Component {
                       type="radio"
                       id="exCustomRadio2"
                       name="customRadio2"
-                      label="PENDING"
-                      checked={this.state.status === "PENDING"}
-                      onChange={(event) => {
+                      label="ACTIVE"
+                      checked={this.state.status === "ACTIVE"}
+                      onChange={event => {
                         this.setState({
                           status:
-                            event.target.value != "on"
-                              ? "COMPLETED"
-                              : "PENDING",
+                            event.target.value != "on" ? "COMPLETED" : "ACTIVE"
                         });
                       }}
                     />
@@ -374,67 +342,20 @@ class TodoApplication extends Component {
                   <ModalFooter>
                     <Button
                       color="secondary"
-                      outline="light"
+                      outline
                       onClick={this.toggleModal}
                     >
-                      <IntlMessages id="todo.cancel" />
+                      <IntlMessages id="survey.cancel" />
                     </Button>
-                    <Button
-                      color="primary"
-                      outline="light"
-                      onClick={() => this.addNetItem()}
-                    >
-                      <IntlMessages id="todo.submit" />
-                    </Button>{" "}
+                    <Button color="primary" onClick={() => this.addNetItem()}>
+                      <IntlMessages id="survey.submit" />
+                    </Button>
                   </ModalFooter>
-                </Modal>{" "}
-                {/* <ButtonDropdown
-                  isOpen={this.state.dropdownSplitOpen}
-                  toggle={this.toggleSplit}
-                >
-                  <div className="btn btn-outline-light pl-4 pr-0 check-button">
-                    <Label
-                      for="checkAll"
-                      className="custom-control custom-checkbox mb-0 d-inline-block"
-                    >
-                      <Input
-                        className="custom-control-input"
-                        type="checkbox"
-                        id="checkAll"
-                        checked={
-                          loading
-                            ? selectedItems.length >= todoItems.length
-                            : false
-                        }
-                        onClick={() => this.handleChangeSelectAll()}
-                      />
-                      <span
-                        className={`custom-control-label ${
-                          loading &&
-                          selectedItems.length > 0 &&
-                          selectedItems.length < todoItems.length
-                            ? "indeterminate"
-                            : ""
-                        }`}
-                      />
-                    </Label>
-                  </div>
-                  <DropdownToggle
-                    caret
-                    color="primary"
-                    outline="light"
-                    className="dropdown-toggle-split pl-2 pr-2"
-                  />
-                  <DropdownMenu right>
-                    <DropdownItem onClick={() => this.deleteItem()}>
-                      <IntlMessages id="todo.action" />
-                    </DropdownItem>
-                    <DropdownItem>
-                      <IntlMessages id="todo.another-action" />
-                    </DropdownItem>
-                  </DropdownMenu>
-                </ButtonDropdown> */}
+                </Modal>
+
+            
               </div>
+
               {/* <BreadcrumbItems match={this.props.match} /> */}
             </div>
 
@@ -445,80 +366,41 @@ class TodoApplication extends Component {
                 className="pt-0 pl-0 d-inline-block d-md-none"
                 onClick={this.toggleDisplayOptions}
               >
-                <IntlMessages id="todo.display-options" />{" "}
+                <IntlMessages id="survey.display-options" />{" "}
                 <i className="simple-icon-arrow-down align-middle" />
               </Button>
-              <Collapse
-                className="d-md-block"
-                isOpen={this.state.displayOptionsIsOpen}
-              >
-                <div className="d-block mb-2 d-md-inline-block">
-                  <UncontrolledDropdown className="mr-1 float-md-left btn-group mb-1">
-                    <DropdownToggle caret color="outline-dark" size="xs">
-                      <IntlMessages id="todo.orderby" />
-                      {orderColumn ? orderColumn.label : ""}
-                    </DropdownToggle>
-                    <DropdownMenu>
-                      {orderColumns.map((o, index) => {
-                        return (
-                          <DropdownItem
-                            key={index}
-                            onClick={() => this.changeOrderBy(o.column)}
-                          >
-                            {o.label}
-                          </DropdownItem>
-                        );
-                      })}
-                    </DropdownMenu>
-                  </UncontrolledDropdown>
-                  <div className="search-sm d-inline-block float-md-left mr-1 mb-1 align-top">
-                    <input
-                      type="text"
-                      name="keyword"
-                      id="search"
-                      placeholder={messages["menu.search"]}
-                      defaultValue={searchKeyword}
-                      onChange={(e) => this.handleOnChangeInput(e)}
-                      onKeyPress={(e) => this.handleKeyPress(e)}
-                    />
-                  </div>
-                </div>
-              </Collapse>
+
+        
             </div>
             <Separator className="mb-5" />
             <Row>
-              {loading ? (
-                todoItems.map((item, index) => {
+              {true ? (
+                surveyItems.map((item, index) => {
                   return (
                     <Colxx xxs="12" key={index}>
-                      <Card className="card d-flex mb-3">
+                               <Card className="card d-flex mb-3">
                         <div className="d-flex flex-grow-1 min-width-zero">
                           <CardBody className="align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
                             <NavLink
                               to="#"
                               id={`toggler${item.id}`}
                               className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
+                              style={{cursor:"default"}}
                             >
-                              <i
+                              {/* <i
                                 onClick={() => {
                                   this.changeItemStatus(item.id);
-                                  // item.status === "COMPLETED"?
-                                  // todoItems.filter((e)=>e.id===item.id)[0].status="PENDING":
-                                  // todoItems.filter((e)=>e.id===item.id)[0].status="COMPLETED"
-
-                                  // console.log(todoItems);
+    
                                 }}
                                 className={`${
-                                  item.status === "COMPLETED"
-                                    ? "simple-icon-check heading-icon"
-                                    : "simple-icon-refresh heading-icon"
+                                   "simple-icon-arrow-right heading-icon"
                                 }`}
                                 style={
                                   item.status === "COMPLETED"
                                     ? { color: "green" }
                                     : null
                                 }
-                              />
+                              /> */}
                               <span className="align-middle d-inline-block">
                                 {item.title}
                               </span>
@@ -538,11 +420,23 @@ class TodoApplication extends Component {
                           <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
                             <i
                               onClick={() => {
-                                this.deleteThisItem(item.id);
+                                // this.textToClipboard(item.detail)
+                                // this.deleteThisItem(item.id);
                               }}
                               className={`${"simple-icon-trash heading-icon"}`}
                               style={{
                                 color: "#D86161",
+                                cursor: "pointer"
+                              }}
+                            />
+                            <i
+                              onClick={() => {
+                                this.textToClipboard(item.detail)
+                                // this.deleteThisItem(item.id);
+                              }}
+                              className={`${"simple-icon-notebook heading-icon"}`}
+                              style={{
+                                color: "grey",
                                 cursor: "pointer"
                                 
                               }}
@@ -577,21 +471,22 @@ class TodoApplication extends Component {
           </Colxx>
         </Row>
 
-        <ApplicationMenu>
+        {/* <ApplicationMenu>
           <PerfectScrollbar
             option={{ suppressScrollX: true, wheelPropagation: false }}
           >
             <div className="p-4">
               <p className="text-muted text-small">
-                <IntlMessages id="todo.status" />
+                <IntlMessages id="survey.status" />
+                Status
               </p>
               <ul className="list-unstyled mb-5">
                 <NavItem className={classnames({ active: !filter })}>
-                  <NavLink to="#" onClick={(e) => this.addFilter("", "")}>
+                  <NavLink to="#" onClick={e => this.addFilter("", "")}>
                     <i className="simple-icon-reload" />
-                    <IntlMessages id="todo.all-tasks" />
+                    <IntlMessages id="survey.all-surveys" />
                     <span className="float-right">
-                      {loading && allTodoItems.length}
+                      {loading && allSurveyItems.length}
                     </span>
                   </NavLink>
                 </NavItem>
@@ -600,18 +495,18 @@ class TodoApplication extends Component {
                     active:
                       filter &&
                       filter.column === "status" &&
-                      filter.value === "PENDING",
+                      filter.value === "ACTIVE"
                   })}
                 >
                   <NavLink
                     to="#"
-                    onClick={(e) => this.addFilter("status", "PENDING")}
+                    onClick={e => this.addFilter("status", "ACTIVE")}
                   >
                     <i className="simple-icon-refresh" />
-                    <IntlMessages id="todo.pending-tasks" />
+                    <IntlMessages id="survey.active-surveys" />
                     <span className="float-right">
                       {loading &&
-                        todoItems.filter((x) => x.status === "PENDING").length}
+                        surveyItems.filter(x => x.status == "ACTIVE").length}
                     </span>
                   </NavLink>
                 </NavItem>
@@ -620,31 +515,30 @@ class TodoApplication extends Component {
                     active:
                       filter &&
                       filter.column === "status" &&
-                      filter.value === "COMPLETED",
+                      filter.value === "COMPLETED"
                   })}
                 >
                   <NavLink
                     to="#"
-                    onClick={(e) => this.addFilter("status", "COMPLETED")}
+                    onClick={e => this.addFilter("status", "COMPLETED")}
                   >
                     <i className="simple-icon-check" />
-                    <IntlMessages id="todo.completed-tasks" />
+                    <IntlMessages id="survey.completed-surveys" />
                     <span className="float-right">
                       {loading &&
-                        todoItems.filter((x) => x.status === "COMPLETED")
-                          .length}
+                        surveyItems.filter(x => x.status == "COMPLETED").length}
                     </span>
                   </NavLink>
                 </NavItem>
               </ul>
-              {/* <p className="text-muted text-small">
-                <IntlMessages id="todo.categories" />
+              <p className="text-muted text-small">
+                <IntlMessages id="survey.categories" />
               </p>
               <ul className="list-unstyled mb-5">
                 {categories.map((c, index) => {
                   return (
                     <NavItem key={index}>
-                      <div onClick={(e) => this.addFilter("category", c)}>
+                      <div onClick={e => this.addFilter("category", c)}>
                         <div className="custom-control custom-radio">
                           <input
                             type="radio"
@@ -661,9 +555,9 @@ class TodoApplication extends Component {
                     </NavItem>
                   );
                 })}
-              </ul> */}
+              </ul>
               <p className="text-muted text-small">
-                <IntlMessages id="todo.labels" />
+                <IntlMessages id="survey.labels" />
               </p>
               <div>
                 {labels.map((l, index) => {
@@ -671,7 +565,7 @@ class TodoApplication extends Component {
                     <p className="d-sm-inline-block mb-1" key={index}>
                       <NavLink
                         to="#"
-                        onClick={(e) => this.addFilter("label", l.label)}
+                        onClick={e => this.addFilter("label", l.label)}
                       >
                         <Badge
                           className="mb-1"
@@ -694,22 +588,20 @@ class TodoApplication extends Component {
             </div>
           </PerfectScrollbar>
         </ApplicationMenu>
+     */}
       </Fragment>
     );
   }
 }
-const mapStateToProps = ({ todoApp }) => {
+const mapStateToProps = ({ surveyListApp }) => {
   return {
-    todoApp,
+    surveyListApp
   };
 };
-export default injectIntl(
-  connect(mapStateToProps, {
-    getTodoList,
-    getTodoListWithFilter,
-    getTodoListWithOrder,
-    getTodoListSearch,
-    addTodoItem,
-    selectedTodoItemsChange,
-  })(TodoApplication)
-);
+export default injectIntl(connect(
+  mapStateToProps,
+  {
+    // getSurveyList
+
+  }
+)(PostGenerator));

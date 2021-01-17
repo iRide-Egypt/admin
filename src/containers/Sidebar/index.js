@@ -461,6 +461,12 @@ class Sidebar extends Component {
                     <IntlMessages id="menu.todo" />
                   </NavLink>
                 </NavItem>
+                <NavItem>
+                  <NavLink to="/app/applications/postGenerator">
+                    <i className="simple-icon-puzzle" />{" "}
+                    <IntlMessages id="menu.postgenerator" />
+                  </NavLink>
+                </NavItem>
                 {/* <NavItem>
                   <NavLink to="/app/applications/survey">
                     <i className="simple-icon-calculator" />{" "}

@@ -5,9 +5,9 @@ import TopNav from 'Containers/TopNav'
 import Sidebar from 'Containers/Sidebar';
 
 import dashboards from './dashboards';
-import layouts from './layouts';
+// import layouts from './layouts';
 import applications from './applications';
-import ui from './ui';
+// import ui from './ui';
 
 import { connect } from 'react-redux';
 
@@ -23,8 +23,8 @@ class MainApp extends Component {
 						<Switch>
 							<Route path={`${match.url}/applications`} component={applications} />
 							<Route path={`${match.url}/dashboards`} component={dashboards} />
-							<Route path={`${match.url}/layouts`} component={layouts} />
-							<Route path={`${match.url}/ui`} component={ui} />
+							{/* <Route path={`${match.url}/layouts`} component={layouts} />
+							<Route path={`${match.url}/ui`} component={ui} /> */}
 							<Redirect to="/error" />
 						</Switch>
 					</div>

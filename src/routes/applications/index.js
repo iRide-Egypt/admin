@@ -2,6 +2,7 @@ import React from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 
 import todo from "./todo";
+import postGenerator from "./postGenerator";
 // import surveyList from "./survey";
 // import surveyDetail from "./survey-detail";
 // import chat from "./chat";
@@ -11,6 +12,7 @@ const Applications = ({ match }) => (
     <Switch>
       <Redirect exact from={`${match.url}/`} to={`${match.url}/todo`} />
       <Route path={`${match.url}/todo`} component={todo} />
+      <Route path={`${match.url}/postGenerator`} component={postGenerator} />
       {/* <Route
         path={`${match.url}/survey/:surveyid`}
         component={surveyDetail}
