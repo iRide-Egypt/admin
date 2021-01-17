@@ -310,6 +310,7 @@ class TodoApplication extends Component {
                       options={categories.map((x, i) => {
                         return { label: x, value: x, key: i };
                       })}
+                      defaultValue={{ label: "Select Category", value: "General" }}
                       value={this.state.category}
                       onChange={(val) => {
                         this.setState({ category: val });
@@ -331,6 +332,7 @@ class TodoApplication extends Component {
                           color: x.color,
                         };
                       })}
+                      defaultValue={{ label: "Select User", value: "Anybody" }}
                       value={this.state.label}
                       onChange={(val) => {
                         this.setState({ label: val });
