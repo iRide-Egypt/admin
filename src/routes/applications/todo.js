@@ -136,6 +136,44 @@ class TodoApplication extends Component {
     // })
     console.log("delete button:", selectedItems);
   }
+  deleteThisItem(id) {
+    const item = this.props.todoApp.todoItems.filter((e) => e.id === id)[0];
+    const docRef = db.collection("app").doc("todo");
+
+    docRef
+      .update({
+        todos: firebase.firestore.FieldValue.arrayRemove(item),
+      })
+      .then(() => {
+        this.props.getTodoList();
+        this.forceUpdate();
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+  changeItemStatus(id) {
+    const item = this.props.todoApp.todoItems.filter((e) => e.id === id)[0];
+    const docRef = db.collection("app").doc("todo");
+
+    docRef
+      .update({
+        todos: firebase.firestore.FieldValue.arrayRemove(item),
+      })
+      .then(() => {
+        item.status === "COMPLETED"
+          ? (item.status = "PENDING")
+          : (item.status = "COMPLETED");
+
+        docRef.update({
+          todos: firebase.firestore.FieldValue.arrayUnion(item),
+        });
+        this.forceUpdate();
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
   handleKeyPress(e) {
     if (e.key === "Enter") {
       this.props.getTodoListSearch(e.target.value);
@@ -347,7 +385,7 @@ class TodoApplication extends Component {
                     </Button>{" "}
                   </ModalFooter>
                 </Modal>{" "}
-                <ButtonDropdown
+                {/* <ButtonDropdown
                   isOpen={this.state.dropdownSplitOpen}
                   toggle={this.toggleSplit}
                 >
@@ -392,7 +430,7 @@ class TodoApplication extends Component {
                       <IntlMessages id="todo.another-action" />
                     </DropdownItem>
                   </DropdownMenu>
-                </ButtonDropdown>
+                </ButtonDropdown> */}
               </div>
               <BreadcrumbItems match={this.props.match} />
             </div>
@@ -458,6 +496,14 @@ class TodoApplication extends Component {
                               className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
                             >
                               <i
+                                onClick={() => {
+                                  this.changeItemStatus(item.id);
+                                  // item.status === "COMPLETED"?
+                                  // todoItems.filter((e)=>e.id===item.id)[0].status="PENDING":
+                                  // todoItems.filter((e)=>e.id===item.id)[0].status="COMPLETED"
+
+                                  // console.log(todoItems);
+                                }}
                                 className={`${
                                   item.status === "COMPLETED"
                                     ? "simple-icon-check heading-icon"
@@ -486,7 +532,18 @@ class TodoApplication extends Component {
                             </div>
                           </CardBody>
                           <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
-                            <CustomInput
+                            <i
+                              onClick={() => {
+                                this.deleteThisItem(item.id);
+                              }}
+                              className={`${"simple-icon-trash heading-icon"}`}
+                              style={{
+                                color: "#D86161",
+                                cursor: "pointer"
+                                
+                              }}
+                            />
+                            {/* <CustomInput
                               className="itemCheck mb-0"
                               type="checkbox"
                               id={`check_${item.id}`}
@@ -499,7 +556,7 @@ class TodoApplication extends Component {
                                 this.handleCheckChange(event, item.id)
                               }
                               label=""
-                            />
+                            /> */}
                           </div>
                         </div>
                         <div className="card-body pt-1">

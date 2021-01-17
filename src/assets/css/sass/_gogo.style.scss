@@ -1163,7 +1163,7 @@ button {
 }
 
 .top-right-button {
-  width: calc(100% - 80px);
+  // width: calc(100% - 80px);
 
   @include respond-below(xs) {
     padding-left: 0;
