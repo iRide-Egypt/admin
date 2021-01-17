@@ -268,7 +268,7 @@ class TodoApplication extends Component {
                   color="primary"
                   outline="light"
                   size="lg"
-                  className="top-right-button"
+                  className="top-right-button px-5"
                   onClick={this.toggleModal}
                 >
                   <IntlMessages id="todo.add-new" />

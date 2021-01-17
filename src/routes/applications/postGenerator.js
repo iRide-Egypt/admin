@@ -360,7 +360,7 @@ class PostGenerator extends Component {
             </div>
 
             <div className="mb-2">
-              <Button
+              {/* <Button
                 color="empty"
                 id="displayOptions"
                 className="pt-0 pl-0 d-inline-block d-md-none"
@@ -368,7 +368,7 @@ class PostGenerator extends Component {
               >
                 <IntlMessages id="survey.display-options" />{" "}
                 <i className="simple-icon-arrow-down align-middle" />
-              </Button>
+              </Button> */}
 
         
             </div>
