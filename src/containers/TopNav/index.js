@@ -205,6 +205,10 @@ class TopNav extends Component {
         this.setState({ username: "Gohary" });
         this.setState({ profilePicture: "/assets/img/gohary.webp" });
         break;
+      case "N6t5EcEbiEPu7RX6SMTINFNRBlf1":
+        this.setState({ username: "Anas Taher" });
+        this.setState({ profilePicture: "/assets/img/anas.webp" });
+        break;
       case "lqVlwvyBaDgp51R5GQEVAAB098C2":
         this.setState({ username: "Yuta" });
         this.setState({ profilePicture: "/assets/img/mai.jpg" });

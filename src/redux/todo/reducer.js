@@ -22,7 +22,9 @@ const INIT_STATE = {
 	labels: [
 		{ label: "Sohayb Hassan", color: "danger" },
 		{ label: "Gohary", color: "warning" },
-		{ label: "Moaz M.", color: "info" }
+		{ label: "Moaz M.", color: "info" },
+		{ label: "Anas Taher", color: "success" }
+
 	],
 	orderColumns: [
 		{ column: "title", label: "Title" },
