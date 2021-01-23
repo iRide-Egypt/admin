@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from "react";
 import IntlMessages from "Util/IntlMessages";
-import { injectIntl} from 'react-intl';
+import { injectIntl } from "react-intl";
 import {
   Row,
   Card,
@@ -28,7 +28,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Input
+  Input,
 } from "reactstrap";
 import Select from "react-select";
 import CustomSelectInput from "Components/CustomSelectInput";
@@ -42,36 +42,49 @@ import ApplicationMenu from "Components/ApplicationMenu";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { connect } from "react-redux";
 import {
-  getSurveyList,
-  getSurveyListWithFilter,
-  getSurveyListWithOrder,
-  getSurveyListSearch,
-  addSurveyItem,
-  selectedSurveyItemsChange
+  getPostList,
+  getPostListWithFilter,
+  getPostListWithOrder,
+  getPostListSearch,
+  addPostItem,
+  selectedPostItemsChange,
 } from "Redux/actions";
+import firebase from "firebase";
+import { db } from "../../firebase";
 
+const docRef = db.collection("app").doc("postGenerator");
 class PostGenerator extends Component {
-  constructor(props) {
-    super(props);
-    this.toggleSplit = this.toggleSplit.bind(this);
-    this.toggleModal = this.toggleModal.bind(this);
-    this.toggleDisplayOptions = this.toggleDisplayOptions.bind(this);
+  state = {
+    postData: null,
+    dropdownSplitOpen: false,
+    modalOpen: false,
+    lastChecked: null,
 
-    this.state = {
-      dropdownSplitOpen: false,
-      modalOpen: false,
-      lastChecked: null,
-
-      title: "",
-      label: {},
-      category: {},
-      status: "ACTIVE",
-      displayOptionsIsOpen: false
-    };
-  }
+    title: "",
+    label: {},
+    category: {},
+    status: "ACTIVE",
+    displayOptionsIsOpen: false,
+  };
   componentDidMount() {
-    // this.props.getSurveyList();
+    this.setPostsList();
   }
+
+  componentWillUnmount() {
+    if (this._asyncRequest) {
+      this._asyncRequest.cancel();
+    }
+  }
+
+  setPostsList = () => {
+    this._asyncRequest = docRef.get().then((doc) => {
+      console.log(doc.data().posts);
+
+      this._asyncRequest = null;
+      this.setState({ postData: doc.data().posts });
+      console.log("Success: ", this.state);
+    });
+  };
 
   toggleDisplayOptions() {
     this.setState({ displayOptionsIsOpen: !this.state.displayOptionsIsOpen });
@@ -79,159 +92,93 @@ class PostGenerator extends Component {
 
   toggleModal() {
     this.setState({
-      modalOpen: !this.state.modalOpen
+      modalOpen: !this.state.modalOpen,
     });
   }
 
   toggleSplit() {
-    this.setState(prevState => ({
-      dropdownSplitOpen: !prevState.dropdownSplitOpen
+    this.setState((prevState) => ({
+      dropdownSplitOpen: !prevState.dropdownSplitOpen,
     }));
   }
 
-  addFilter(column, value) {
-    this.props.getSurveyListWithFilter(column, value);
-  }
-  changeOrderBy(column) {
-    this.props.getSurveyListWithOrder(column);
-  }
-  addNetItem() {
-    const newItem = {
-      title: this.state.title,
-      label: this.state.label.value,
-      labelColor: this.state.label.color,
-      category: this.state.category.value,
-      status: this.state.status
-    };
-    this.props.addSurveyItem(newItem);
-    this.toggleModal();
-    this.setState({
-      title: "",
-      label: {},
-      category: {},
-      status: "ACTIVE"
-    });
-  }
-
-  handleKeyPress(e) {
-    if (e.key === "Enter") {
-      this.props.getSurveyListSearch(e.target.value);
-    }
-  }
-
-  handleCheckChange(event, id) {
-    if (this.state.lastChecked == null) {
-      this.setState({
-        lastChecked: id
+  addPost() {
+    let item = "";
+    docRef
+      .update({
+        todos: firebase.firestore.FieldValue.arrayUnion(item),
+      })
+      .then((e) => {})
+      .catch((err) => {
+        console.log(err);
       });
-    }
-
-    let selectedItems = Object.assign(
-      [],
-      this.props.surveyListApp.selectedItems
-    );
-    if (selectedItems.includes(id)) {
-      selectedItems = selectedItems.filter(x => x !== id);
-    } else {
-      selectedItems.push(id);
-    }
-    this.props.selectedSurveyItemsChange(selectedItems);
-
-    if (event.shiftKey) {
-      var items = this.props.surveyListApp.surveyItems;
-      var start = this.getIndex(id, items, "id");
-      var end = this.getIndex(this.state.lastChecked, items, "id");
-      items = items.slice(Math.min(start, end), Math.max(start, end) + 1);
-      selectedItems.push(
-        ...items.map(item => {
-          return item.id;
-        })
-      );
-      selectedItems = Array.from(new Set(selectedItems));
-      this.props.selectedSurveyItemsChange(selectedItems);
-    }
-    return;
   }
-  handleChangeSelectAll() {
-    if (this.props.surveyListApp.loading) {
-      if (
-        this.props.surveyListApp.selectedItems.length >=
-        this.props.surveyListApp.surveyItems.length
-      ) {
-        this.props.selectedSurveyItemsChange([]);
-      } else {
-        this.props.selectedSurveyItemsChange(
-          this.props.surveyListApp.surveyItems.map(x => x.id)
-        );
-      }
-    }
+
+  deletePost(id) {
+    const item = this.state.postData.filter((e) => e.id === id)[0];
+    docRef
+      .update({
+        posts: firebase.firestore.FieldValue.arrayRemove(item),
+      })
+      .then(() => {
+        this.setPostsList();
+        // this.forceUpdate();
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   }
-  textToClipboard (text) {
+
+  textToClipboard(text) {
     var dummy = document.createElement("textarea");
     document.body.appendChild(dummy);
+
     dummy.value = text;
     dummy.select();
+
     document.execCommand("copy");
+    this.iosCopyToClipboard(dummy);
+
     document.body.removeChild(dummy);
-}
-  getIndex(value, arr, prop) {
-    for (var i = 0; i < arr.length; i++) {
-      if (arr[i][prop] === value) {
-        return i;
-      }
-    }
-    return -1;
   }
+  iosCopyToClipboard(el) {
+    var oldContentEditable = el.contentEditable,
+      oldReadOnly = el.readOnly,
+      range = document.createRange();
+
+    el.contentEditable = true;
+    el.readOnly = false;
+    range.selectNodeContents(el);
+
+    var s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(range);
+
+    el.setSelectionRange(0, 999999);
+
+    el.contentEditable = oldContentEditable;
+    el.readOnly = oldReadOnly;
+
+    document.execCommand("copy");
+  }
+
   render() {
-      const surveyItems= [
-        {
-          // "title": "Haram",
-          "category" : "Paid",
-          "createDate" : "22.08.2018",
-          "detail" : `ي ظل وباء كورونا المنتشر أكيد نفسك تخرج وتتفسح وفي نفس الوقت محتاج تحافظ على صحتك، عشان كده فريق الفروسية الأول في مصر هيوفرلك تجربة جديدة في مكان مفتوح مع الاتزام بالاجراءات الاحترازية.☀️
-          الفريق حاليًا بينظم رحلات بالخيول في (الهرم - سقارة - الفيوم - دهب)، الجديد كمان أن مش لازم تكون بتعرف تركب خيل خالص، لتفاصيل أكثر سيبلنا كومنت وهنرد عليك. 😄🌸`,
-          "status" : "ACTIVE",
-          "label": "General",
-          "labelColor": "light",
-          "id": 1
-        },
-        {
-          // "title": "Dahab",
-          "createDate" : "22.09.2018",
-          "status" : "ACTIVE",
-          "detail":`مش ناوي تغير صورة البروفايل اللي بقالك سنة حاططها؟ 😌
-          طب مش ناوي تغير مودك وتجرب حاجه جديدة؟ 😇
-          عيش مع آي رايد يوم مختلف مع حصانك ومع ناس كلها بتحب الخيل زيك... ومتنساش الفوتوسيشن الاحترافي اللي بيقدمه الفريق مجانًا. 📸 🐴`,
-          "label": "Dahab",
-          "labelColor": "secondary",
-          "id": 2
-        },
-        {
-          // "title": "Fayyoum",
-          "createDate" : "15.09.2018",
-          "detail":`أنا كنت زيك كده باخد الخطوة في 10 سنين، طب أطلع مع آي رايد الأسبوع ده؟ 🤔 لأ اللي بعده... 😌
-          براحتك، أحنا بس حابين نفكرك أن رايد يوم الجمعة اكتملت... بس لسه فرصتك مراحتش أحجز معانا يوم السبت اللي جي وسألنا علي الخصم على ثمن الإيفينت اعمل كومنت وهنبعتلك التفاصيل.
-          #فارس_في_كل_بيت_مصري`,
-          "status" : "COMPLETED",
-          "label": "Fayyoum",
-          "labelColor": "info",
-          "id": 3
-        }
-      ]
-    const {
-      allSurveyItems,
-    
-      error,
-      filter,
-      searchKeyword,
-      loading,
-      orderColumn,
-      labels,
-      orderColumns,
-      categories,
-      selectedItems
-    } = this.props.surveyListApp;
-    const {messages} = this.props.intl;
+    const { postData } = this.state;
+
+    // const {
+    //   allPostItems,
+
+    //   error,
+    //   filter,
+    //   searchKeyword,
+    //   loading,
+    //   orderColumn,
+    //   labels,
+    //   orderColumns,
+    //   categories,
+    //   selectedItems,
+    // } = this.props.surveyListApp;
+    // const { messages } = this.props.intl;
     return (
       <Fragment>
         <Row className="app-row survey-app">
@@ -266,7 +213,7 @@ class PostGenerator extends Component {
                     <Input
                       type="text"
                       defaultValue={this.state.title}
-                      onChange={event => {
+                      onChange={(event) => {
                         this.setState({ title: event.target.value });
                       }}
                     />
@@ -279,11 +226,11 @@ class PostGenerator extends Component {
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
-                      options={categories.map((x, i) => {
+                      options={[].map((x, i) => {
                         return { label: x, value: x, key: i };
                       })}
                       value={this.state.category}
-                      onChange={val => {
+                      onChange={(val) => {
                         this.setState({ category: val });
                       }}
                     />
@@ -295,16 +242,16 @@ class PostGenerator extends Component {
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
-                      options={labels.map((x, i) => {
+                      options={[].map((x, i) => {
                         return {
                           label: x.label,
                           value: x.label,
                           key: i,
-                          color: x.color
+                          color: x.color,
                         };
                       })}
                       value={this.state.label}
-                      onChange={val => {
+                      onChange={(val) => {
                         this.setState({ label: val });
                       }}
                     />
@@ -318,11 +265,11 @@ class PostGenerator extends Component {
                       name="customRadio"
                       label="COMPLETED"
                       checked={this.state.status === "COMPLETED"}
-                      onChange={event => {
-                        this.setState({
-                          status:
-                            event.target.value == "on" ? "COMPLETED" : "ACTIVE"
-                        });
+                      onChange={(event) => {
+                        // this.setState({
+                        //   status:
+                        //     event.target.value == "on" ? "COMPLETED" : "ACTIVE",
+                        // });
                       }}
                     />
                     <CustomInput
@@ -331,11 +278,11 @@ class PostGenerator extends Component {
                       name="customRadio2"
                       label="ACTIVE"
                       checked={this.state.status === "ACTIVE"}
-                      onChange={event => {
-                        this.setState({
-                          status:
-                            event.target.value != "on" ? "COMPLETED" : "ACTIVE"
-                        });
+                      onChange={(event) => {
+                        // this.setState({
+                        //   status:
+                        //     event.target.value != "on" ? "COMPLETED" : "ACTIVE",
+                        // });
                       }}
                     />
                   </ModalBody>
@@ -352,8 +299,6 @@ class PostGenerator extends Component {
                     </Button>
                   </ModalFooter>
                 </Modal>
-
-            
               </div>
 
               {/* <BreadcrumbItems match={this.props.match} /> */}
@@ -369,23 +314,21 @@ class PostGenerator extends Component {
                 <IntlMessages id="survey.display-options" />{" "}
                 <i className="simple-icon-arrow-down align-middle" />
               </Button> */}
-
-        
             </div>
             <Separator className="mb-5" />
             <Row>
-              {true ? (
-                surveyItems.map((item, index) => {
+              {postData ? (
+                postData.map((item, index) => {
                   return (
                     <Colxx xxs="12" key={index}>
-                               <Card className="card d-flex mb-3">
+                      <Card className="card d-flex mb-3">
                         <div className="d-flex flex-grow-1 min-width-zero">
                           <CardBody className="align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
                             <NavLink
                               to="#"
                               id={`toggler${item.id}`}
                               className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
-                              style={{cursor:"default"}}
+                              style={{ cursor: "default" }}
                             >
                               {/* <i
                                 onClick={() => {
@@ -419,26 +362,47 @@ class PostGenerator extends Component {
                           </CardBody>
                           <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
                             <i
-                              onClick={() => {
-                                // this.textToClipboard(item.detail)
-                                // this.deleteThisItem(item.id);
+                              onClick={(e) => {
+                                this.deletePost(item.id);
                               }}
                               className={`${"simple-icon-trash heading-icon"}`}
+                              onMouseOver={(e) =>
+                                (e.target.style.color = "white")
+                              }
+                              onMouseOut={(e) =>
+                                (e.target.style.color = "#D86161")
+                              }
+                              onMouseDown={(e) =>
+                                (e.target.style.color = "green")
+                              }
+                              onMouseUp={(e) =>
+                                (e.target.style.color = "white")
+                              }
                               style={{
                                 color: "#D86161",
-                                cursor: "pointer"
+                                cursor: "pointer",
                               }}
                             />
                             <i
-                              onClick={() => {
-                                this.textToClipboard(item.detail)
-                                // this.deleteThisItem(item.id);
+                              onClick={(e) => {
+                                this.textToClipboard(item.detail);
                               }}
                               className={`${"simple-icon-notebook heading-icon"}`}
+                              onMouseOver={(e) =>
+                                (e.target.style.color = "white")
+                              }
+                              onMouseDown={(e) =>
+                                (e.target.style.color = "green")
+                              }
+                              onMouseUp={(e) =>
+                                (e.target.style.color = "white")
+                              }
+                              onMouseOut={(e) =>
+                                (e.target.style.color = "grey")
+                              }
                               style={{
                                 color: "grey",
-                                cursor: "pointer"
-                                
+                                cursor: "pointer",
                               }}
                             />
                             {/* <CustomInput
@@ -486,7 +450,7 @@ class PostGenerator extends Component {
                     <i className="simple-icon-reload" />
                     <IntlMessages id="survey.all-surveys" />
                     <span className="float-right">
-                      {loading && allSurveyItems.length}
+                      {loading && allPostItems.length}
                     </span>
                   </NavLink>
                 </NavItem>
@@ -593,15 +557,5 @@ class PostGenerator extends Component {
     );
   }
 }
-const mapStateToProps = ({ surveyListApp }) => {
-  return {
-    surveyListApp
-  };
-};
-export default injectIntl(connect(
-  mapStateToProps,
-  {
-    // getSurveyList
 
-  }
-)(PostGenerator));
+export default PostGenerator;
