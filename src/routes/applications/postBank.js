@@ -52,19 +52,23 @@ import {
 import firebase from "firebase";
 import { db } from "../../firebase";
 
-const docRef = db.collection("app").doc("postGenerator");
-class PostGenerator extends Component {
+const docRef = db.collection("app").doc("postBank");
+let timer;
+class PostBank extends Component {
   state = {
     postData: null,
     dropdownSplitOpen: false,
-    modalOpen: false,
     lastChecked: null,
-
+    displayOptionsIsOpen: false,
+    errorMessage: null,
+    isCopied:false,
+    fadeClass:"btn btn-warning py-1 px-1 fixed-bottom rounded-pill fadeIn",
+    //Modal
+    modalOpen: false,
     title: "",
     label: {},
     category: {},
     status: "ACTIVE",
-    displayOptionsIsOpen: false,
   };
   componentDidMount() {
     this.setPostsList();
@@ -78,11 +82,10 @@ class PostGenerator extends Component {
 
   setPostsList = () => {
     this._asyncRequest = docRef.get().then((doc) => {
-      console.log(doc.data().posts);
-
+      if (!doc.data().posts) return;
       this._asyncRequest = null;
+
       this.setState({ postData: doc.data().posts });
-      console.log("Success: ", this.state);
     });
   };
 
@@ -91,8 +94,11 @@ class PostGenerator extends Component {
   }
 
   toggleModal() {
-    this.setState({
-      modalOpen: !this.state.modalOpen,
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        modalOpen: !prevState.modalOpen,
+      };
     });
   }
 
@@ -101,14 +107,76 @@ class PostGenerator extends Component {
       dropdownSplitOpen: !prevState.dropdownSplitOpen,
     }));
   }
+  formatDate(date) {
+    const ye = new Intl.DateTimeFormat("en", { year: "numeric" }).format(date);
+    const mo = new Intl.DateTimeFormat("en", { month: "short" }).format(date);
+    const da = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
+    if (
+      ye !==
+      new Intl.DateTimeFormat("en", { year: "numeric" }).format(new Date())
+    ) {
+      return `${da}-${mo}-${ye}`;
+    } else {
+      return `${da}-${mo}`;
+    }
+  }
+  cleanModelState() {
+    this.setState({
+      title: "",
+      category: {},
+      detail: "",
+      label: {},
+    });
+  }
+  labelColorSwitch(label) {
+    switch (label) {
+      case "Dahab":
+        return "danger";
+      case "Fayyoum":
+        return "success";
+      case "Giza":
+        return "warning";
+      case "Saqqara":
+        return "info";
 
+      default:
+        return "light";
+    }
+  }
   addPost() {
-    let item = "";
+    const { title, category, detail, label, postData } = this.state;
+    
+    if(Object.keys(category).length === 0  || !detail.length || Object.keys(label).length === 0){
+      this.setState({isError:true});
+      return;
+    }
+
+    const id = postData.length ? postData[0].id + 1 : 0,
+      date = this.formatDate(new Date()),
+      labelColor = this.labelColorSwitch(label.value),
+      autoTitle = title.length
+        ? title
+        : detail.split(" ").slice(0, 5).join(" ") + "...";
+
+    const item = {
+      createDate: date,
+      id: id,
+      title: autoTitle,
+      detail: detail,
+      label: label.value,
+      category: category.value,
+      labelColor: labelColor,
+    };
+
     docRef
       .update({
-        todos: firebase.firestore.FieldValue.arrayUnion(item),
+        posts: firebase.firestore.FieldValue.arrayUnion(item),
       })
-      .then((e) => {})
+      .then(() => {
+        this.setPostsList();
+        this.cleanModelState();
+        this.toggleModal();
+      })
       .catch((err) => {
         console.log(err);
       });
@@ -122,14 +190,18 @@ class PostGenerator extends Component {
       })
       .then(() => {
         this.setPostsList();
-        // this.forceUpdate();
       })
       .catch((e) => {
         console.log(e);
       });
   }
-
+  isArabic(text) {
+    var pattern = /[\u0600-\u06FF\u0750-\u077F]/;
+    console.log(pattern.test(text));
+    return pattern.test(text);
+}
   textToClipboard(text) {
+    clearInterval(timer);
     var dummy = document.createElement("textarea");
     document.body.appendChild(dummy);
 
@@ -138,8 +210,14 @@ class PostGenerator extends Component {
 
     document.execCommand("copy");
     this.iosCopyToClipboard(dummy);
+    this.setState({isCopied:true})
 
     document.body.removeChild(dummy);
+
+
+    timer = setTimeout(() => {
+      this.setState({isCopied:false})
+    }, 3000);
   }
   iosCopyToClipboard(el) {
     var oldContentEditable = el.contentEditable,
@@ -163,47 +241,45 @@ class PostGenerator extends Component {
   }
 
   render() {
-    const { postData } = this.state;
+    const { postData, isCopied, fadeClass, errorMessage, isError } = this.state;
 
-    // const {
-    //   allPostItems,
-
-    //   error,
-    //   filter,
-    //   searchKeyword,
-    //   loading,
-    //   orderColumn,
-    //   labels,
-    //   orderColumns,
-    //   categories,
-    //   selectedItems,
-    // } = this.props.surveyListApp;
-    // const { messages } = this.props.intl;
+    const categories = [
+      { label: "Paid", value: "Paid" },
+      { label: "Normal", value: "Normal" },
+    ];
+    const labels = [
+      { label: "General", value: "General" },
+      { label: "Dahab", value: "Dahab" },
+      { label: "Fayyoum", value: "Fayyoum" },
+      { label: "Giza", value: "Giza" },
+      { label: "Saqqara", value: "Saqqara" },
+    ];
     return (
       <Fragment>
-        <Row className="app-row survey-app">
+        <Row className="app-row survey-app pr-0">
           <Colxx xxs="12">
             <div className="mb-2">
               <h1>
-                <IntlMessages id="menu.postgenerator" />
+                <IntlMessages id="menu.postbank" />
               </h1>
 
               <div className="float-sm-right">
-                {/* <Button
+                <Button
                   color="primary"
+                  outline="light"
                   size="lg"
                   className="top-right-button mr-1"
-                  onClick={this.toggleModal}
+                  onClick={() => this.toggleModal()}
                 >
-                  <IntlMessages id="survey.add-new" />
-                </Button> */}
+                  <IntlMessages id="Add New Post" />
+                </Button>
                 <Modal
                   isOpen={this.state.modalOpen}
                   toggle={this.toggleModal}
                   wrapClassName="modal-right"
                   backdrop="static"
                 >
-                  <ModalHeader toggle={this.toggleModal}>
+                  <ModalHeader toggle={() => this.toggleModal()}>
                     <IntlMessages id="survey.add-new-title" />
                   </ModalHeader>
                   <ModalBody>
@@ -217,7 +293,16 @@ class PostGenerator extends Component {
                         this.setState({ title: event.target.value });
                       }}
                     />
-
+                    <Label className="mt-4">
+                      <IntlMessages id="todo.detail" />
+                    </Label>
+                    <Input
+                      type="textarea"
+                      defaultValue={this.state.detail}
+                      onChange={(event) => {
+                        this.setState({ detail: event.target.value, isError:false });
+                      }}
+                    />
                     <Label className="mt-4">
                       <IntlMessages id="survey.category" />
                     </Label>
@@ -226,12 +311,12 @@ class PostGenerator extends Component {
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
-                      options={[].map((x, i) => {
-                        return { label: x, value: x, key: i };
+                      options={categories.map((x, i) => {
+                        return { label: x.label, value: x.value, key: i };
                       })}
                       value={this.state.category}
                       onChange={(val) => {
-                        this.setState({ category: val });
+                        this.setState({ category: val , isError:false});
                       }}
                     />
                     <Label className="mt-4">
@@ -242,7 +327,7 @@ class PostGenerator extends Component {
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
-                      options={[].map((x, i) => {
+                      options={labels.map((x, i) => {
                         return {
                           label: x.label,
                           value: x.label,
@@ -252,11 +337,11 @@ class PostGenerator extends Component {
                       })}
                       value={this.state.label}
                       onChange={(val) => {
-                        this.setState({ label: val });
+                        this.setState({ label: val , isError:false});
                       }}
                     />
 
-                    <Label className="mt-4">
+                    {/* <Label className="mt-4">
                       <IntlMessages id="survey.status" />
                     </Label>
                     <CustomInput
@@ -266,42 +351,45 @@ class PostGenerator extends Component {
                       label="COMPLETED"
                       checked={this.state.status === "COMPLETED"}
                       onChange={(event) => {
-                        // this.setState({
-                        //   status:
-                        //     event.target.value == "on" ? "COMPLETED" : "ACTIVE",
-                        // });
+                        this.setState({
+                          status:
+                            event.target.value == "on" ? "COMPLETED" : "ACTIVE",
+                        });
                       }}
-                    />
-                    <CustomInput
+                    /> */}
+                    {/* <CustomInput
                       type="radio"
                       id="exCustomRadio2"
                       name="customRadio2"
                       label="ACTIVE"
                       checked={this.state.status === "ACTIVE"}
                       onChange={(event) => {
-                        // this.setState({
-                        //   status:
-                        //     event.target.value != "on" ? "COMPLETED" : "ACTIVE",
-                        // });
+                        this.setState({
+                          status:
+                            event.target.value != "on" ? "COMPLETED" : "ACTIVE",
+                        });
                       }}
-                    />
+                    /> */}
                   </ModalBody>
+                    {isError && <p className="text-danger text-center">Detail, Category and Label must be filled!</p>}
                   <ModalFooter>
                     <Button
-                      color="secondary"
+                      color="danger"
                       outline
-                      onClick={this.toggleModal}
+                      onClick={() => this.toggleModal()}
                     >
                       <IntlMessages id="survey.cancel" />
                     </Button>
-                    <Button color="primary" onClick={() => this.addNetItem()}>
+                    <Button
+                      color="primary"
+                      outline="light"
+                      onClick={() => this.addPost()}
+                    >
                       <IntlMessages id="survey.submit" />
                     </Button>
                   </ModalFooter>
                 </Modal>
               </div>
-
-              {/* <BreadcrumbItems match={this.props.match} /> */}
             </div>
 
             <div className="mb-2">
@@ -344,7 +432,7 @@ class PostGenerator extends Component {
                                     : null
                                 }
                               /> */}
-                              <span className="align-middle d-inline-block">
+                              <span className={this.isArabic(item.detail)?"align-middle d-inline-block rtl":"align-middle d-inline-block"}>
                                 {item.title}
                               </span>
                             </NavLink>
@@ -362,10 +450,10 @@ class PostGenerator extends Component {
                           </CardBody>
                           <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
                             <i
-                              onClick={(e) => {
+                              onClick={() => {
                                 this.deletePost(item.id);
                               }}
-                              className={`${"simple-icon-trash heading-icon"}`}
+                              className={`${"simple-icon-trash heading-icon mr-3"}`}
                               onMouseOver={(e) =>
                                 (e.target.style.color = "white")
                               }
@@ -384,7 +472,7 @@ class PostGenerator extends Component {
                               }}
                             />
                             <i
-                              onClick={(e) => {
+                              onClick={() => {
                                 this.textToClipboard(item.detail);
                               }}
                               className={`${"simple-icon-notebook heading-icon"}`}
@@ -421,8 +509,8 @@ class PostGenerator extends Component {
                             /> */}
                           </div>
                         </div>
-                        <div className="card-body pt-1">
-                          <p className="mb-0">{item.detail}</p>
+                        <div className="card-body pt-1" style={{whiteSpace:"pre-wrap"}}>
+                          <p className={this.isArabic(item.detail)?"mb-0 rtl":"mb-0"}>{item.detail}</p>
                         </div>
                       </Card>
                     </Colxx>
@@ -432,130 +520,12 @@ class PostGenerator extends Component {
                 <div className="loading" />
               )}
             </Row>
+          {isCopied?<div className={fadeClass} style={{left:"45%", bottom:"60px", width:"150px", cursor:"default"}}>Copied to clipboard</div>:null}
           </Colxx>
         </Row>
-
-        {/* <ApplicationMenu>
-          <PerfectScrollbar
-            option={{ suppressScrollX: true, wheelPropagation: false }}
-          >
-            <div className="p-4">
-              <p className="text-muted text-small">
-                <IntlMessages id="survey.status" />
-                Status
-              </p>
-              <ul className="list-unstyled mb-5">
-                <NavItem className={classnames({ active: !filter })}>
-                  <NavLink to="#" onClick={e => this.addFilter("", "")}>
-                    <i className="simple-icon-reload" />
-                    <IntlMessages id="survey.all-surveys" />
-                    <span className="float-right">
-                      {loading && allPostItems.length}
-                    </span>
-                  </NavLink>
-                </NavItem>
-                <NavItem
-                  className={classnames({
-                    active:
-                      filter &&
-                      filter.column === "status" &&
-                      filter.value === "ACTIVE"
-                  })}
-                >
-                  <NavLink
-                    to="#"
-                    onClick={e => this.addFilter("status", "ACTIVE")}
-                  >
-                    <i className="simple-icon-refresh" />
-                    <IntlMessages id="survey.active-surveys" />
-                    <span className="float-right">
-                      {loading &&
-                        surveyItems.filter(x => x.status == "ACTIVE").length}
-                    </span>
-                  </NavLink>
-                </NavItem>
-                <NavItem
-                  className={classnames({
-                    active:
-                      filter &&
-                      filter.column === "status" &&
-                      filter.value === "COMPLETED"
-                  })}
-                >
-                  <NavLink
-                    to="#"
-                    onClick={e => this.addFilter("status", "COMPLETED")}
-                  >
-                    <i className="simple-icon-check" />
-                    <IntlMessages id="survey.completed-surveys" />
-                    <span className="float-right">
-                      {loading &&
-                        surveyItems.filter(x => x.status == "COMPLETED").length}
-                    </span>
-                  </NavLink>
-                </NavItem>
-              </ul>
-              <p className="text-muted text-small">
-                <IntlMessages id="survey.categories" />
-              </p>
-              <ul className="list-unstyled mb-5">
-                {categories.map((c, index) => {
-                  return (
-                    <NavItem key={index}>
-                      <div onClick={e => this.addFilter("category", c)}>
-                        <div className="custom-control custom-radio">
-                          <input
-                            type="radio"
-                            className="custom-control-input"
-                            defaultChecked={
-                              filter &&
-                              filter.column === "category" &&
-                              filter.value === c
-                            }
-                          />
-                          <label className="custom-control-label">{c}</label>
-                        </div>
-                      </div>
-                    </NavItem>
-                  );
-                })}
-              </ul>
-              <p className="text-muted text-small">
-                <IntlMessages id="survey.labels" />
-              </p>
-              <div>
-                {labels.map((l, index) => {
-                  return (
-                    <p className="d-sm-inline-block mb-1" key={index}>
-                      <NavLink
-                        to="#"
-                        onClick={e => this.addFilter("label", l.label)}
-                      >
-                        <Badge
-                          className="mb-1"
-                          color={`${
-                            filter &&
-                            filter.column === "label" &&
-                            filter.value === l.label
-                              ? l.color
-                              : "outline-" + l.color
-                          }`}
-                          pill
-                        >
-                          {l.label}
-                        </Badge>
-                      </NavLink>
-                    </p>
-                  );
-                })}
-              </div>
-            </div>
-          </PerfectScrollbar>
-        </ApplicationMenu>
-     */}
       </Fragment>
     );
   }
 }
 
-export default PostGenerator;
+export default PostBank;
