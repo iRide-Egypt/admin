@@ -31,7 +31,8 @@ import {
   Input,
   Accordion,
   Toggle,
-  CardHeader
+  CardHeader,
+  UncontrolledCollapse,
 } from "reactstrap";
 
 import Select from "react-select";
@@ -47,13 +48,14 @@ const docRef = db.collection("app").doc("eventBooking");
 let timer;
 class EventBooking extends Component {
   state = {
-    postData: null,
+    ridersData: null,
     dropdownSplitOpen: false,
     lastChecked: null,
     displayOptionsIsOpen: false,
     errorMessage: null,
     isCopied: false,
-    isOpen:false,
+    isOpen: false,
+    isOpenList: {},
     //Modal
     modalOpen: false,
     title: "",
@@ -76,7 +78,7 @@ class EventBooking extends Component {
       if (!doc.data().riders) return;
       this._asyncRequest = null;
 
-      this.setState({ postData: doc.data().riders });
+      this.setState({ ridersData: doc.data().riders });
     });
   };
 
@@ -135,7 +137,7 @@ class EventBooking extends Component {
     }
   }
   addPost() {
-    const { title, category, detail, label, postData } = this.state;
+    const { title, category, detail, label, ridersData } = this.state;
 
     if (
       Object.keys(category).length === 0 ||
@@ -146,7 +148,7 @@ class EventBooking extends Component {
       return;
     }
 
-    const id = postData.length ? postData[0].id + 1 : 0,
+    const id = ridersData.length ? ridersData[0].id + 1 : 0,
       date = this.formatDate(new Date()),
       labelColor = this.labelColorSwitch(label.value),
       autoTitle = title.length
@@ -178,7 +180,7 @@ class EventBooking extends Component {
   }
 
   deletePost(id) {
-    const item = this.state.postData.filter((e) => e.id === id)[0];
+    const item = this.state.ridersData.filter((e) => e.id === id)[0];
     docRef
       .update({
         posts: firebase.firestore.FieldValue.arrayRemove(item),
@@ -233,16 +235,28 @@ class EventBooking extends Component {
 
     document.execCommand("copy");
   }
-  toggleAccordion() {
+  toggleAccordion(id) {
+    let isOpenList = {
+      1: true,
+    };
+
     this.setState((prevState) => {
       return {
         ...prevState,
-        isOpen: !prevState.isOpen,
+        isOpenList: { ...!isOpenList[id] },
       };
     });
   }
   render() {
-    const { postData, isCopied, fadeClass, errorMessage, isError,isOpen } = this.state;
+    const {
+      ridersData,
+      isCopied,
+      fadeClass,
+      errorMessage,
+      isError,
+      isOpen,
+      isOpenList,
+    } = this.state;
 
     const categories = [
       { label: "Paid", value: "Paid" },
@@ -412,28 +426,159 @@ class EventBooking extends Component {
               </Button> */}
             </div>
             <Separator className="mb-5" />
+
             <Row>
+              {[
+                {
+                  title: "Moaz M.",
+                  detail: "A7la mesa 3l nas el kwysa",
+                  id: 0,
+                },
+                {
+                  title: "Sohayb M.",
+                  detail: "A7la mesa 3l nas el kwysa",
+                  id: 1,
+                },
+                {
+                  title: "A. Gohay",
+                  detail: "A7la mesa 3l nas el kwysa",
+                  id: 2,
+                },
+              ].map((item, index) => {
+                return (
+                  <Fragment key={0}>
+                    <Colxx xxs="12" key={index}>
+                      <Card className="card d-flex mb-1">
+                        <div className="d-flex flex-grow-1 min-width-zero">
+                          <CardBody className="align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
+                            <NavLink
+                              to="#"
+                              id={`toggler${item.id}`}
+                              className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
+                              style={{ cursor: "default" }}
+                              // onClick={() => this.toggleAccordion(item.id)}
+                            >
+                              <span
+                                className={
+                                  this.isArabic(item.detail)
+                                    ? "align-middle d-inline-block rtl"
+                                    : "align-middle d-inline-block"
+                                }
+                              >
+                                {item.title}
+                              </span>
+                            </NavLink>
+                            <p className="mb-1 text-muted text-small w-15 w-xs-100">
+                              {item.category}
+                            </p>
+                            <p className="mb-1 text-muted text-small w-15 w-xs-100">
+                              {item.createDate}
+                            </p>
+                            <div className="w-15 w-xs-100">
+                              <Badge color={item.labelColor} pill>
+                                {item.label}
+                              </Badge>
+                            </div>
+                          </CardBody>
+                          <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                            <i
+                              onClick={() => {
+                                this.deletePost(item.id);
+                              }}
+                              className={`${"simple-icon-trash heading-icon mr-3"}`}
+                              onMouseOver={(e) =>
+                                (e.target.style.color = "white")
+                              }
+                              onMouseOut={(e) =>
+                                (e.target.style.color = "#D86161")
+                              }
+                              onMouseDown={(e) =>
+                                (e.target.style.color = "green")
+                              }
+                              onMouseUp={(e) =>
+                                (e.target.style.color = "white")
+                              }
+                              style={{
+                                color: "#D86161",
+                                cursor: "pointer",
+                              }}
+                            />
+                            <i
+                              onClick={() => {
+                                this.textToClipboard(item.detail);
+                              }}
+                              className={`${"simple-icon-notebook heading-icon"}`}
+                              onMouseOver={(e) =>
+                                (e.target.style.color = "white")
+                              }
+                              onMouseDown={(e) =>
+                                (e.target.style.color = "green")
+                              }
+                              onMouseUp={(e) =>
+                                (e.target.style.color = "white")
+                              }
+                              onMouseOut={(e) =>
+                                (e.target.style.color = "grey")
+                              }
+                              style={{
+                                color: "grey",
+                                cursor: "pointer",
+                              }}
+                            />
+                            {/* <CustomInput
+                              className="itemCheck mb-0"
+                              type="checkbox"
+                              id={`check_${item.id}`}
+                              checked={
+                                loading
+                                  ? selectedItems.includes(item.id)
+                                  : false
+                              }
+                              onClick={(event) =>
+                                this.handleCheckChange(event, item.id)
+                              }
+                              label=""
+                            /> */}
+                          </div>
+                        </div>
+                      </Card>
+                    </Colxx>
 
+                    {/* 2nd Card */}
+                    <Colxx xxs="12">
+                    <UncontrolledCollapse toggler={"#toggler" + item.id}>
+                        <Card className="mb-3">
+                          <CardBody>
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Nesciunt magni, voluptas debitis similique
+                            porro a molestias consequuntur earum odio officiis
+                            natus, amet hic, iste sed dignissimos esse fuga!
+                            Minus, alias.
+                          </CardBody>
+                        </Card>
+                      </UncontrolledCollapse>
+                    </Colxx>
+                  </Fragment>
+                );
+              })}
+              {/* 
+    <div>
+    <Button color="primary" id="toggler" style={{ marginBottom: '1rem' }}>
+      Toggle
+    </Button>
+    <UncontrolledCollapse toggler="#toggler">
+      <Card>
+        <CardBody>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Nesciunt magni, voluptas debitis
+          similique porro a molestias consequuntur earum odio officiis natus, amet hic, iste sed
+          dignissimos esse fuga! Minus, alias.
+        </CardBody>
+      </Card>
+    </UncontrolledCollapse>
+  </div> */}
 
-
-            {/* <div>
-      <Button color="primary" onClick={this.toggleAccordion} style={{ marginBottom: '1rem' }}>Toggle</Button>
-      <Collapse isOpen={isOpen}>
-        <Card>
-          <CardBody>
-          Anim pariatur cliche reprehenderit,
-           enim eiusmod high life accusamus terry richardson ad squid. Nihil
-           anim keffiyeh helvetica, craft beer labore wes anderson cred
-           nesciunt sapiente ea proident.
-          </CardBody>
-        </Card>
-      </Collapse>
-    </div> */}
-
-
-
-              {postData ? (
-                postData.map((item, index) => {
+              {ridersData ? (
+                ridersData.map((item, index) => {
                   return (
                     <Colxx xxs="12" key={index}>
                       <Card className="card d-flex mb-3">
