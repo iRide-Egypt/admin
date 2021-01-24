@@ -44,11 +44,11 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase";
 import { db } from "../../firebase";
 
-const docRef = db.collection("app").doc("eventBooking");
+const docRef = db.collection("app").doc("eventCreator");
 let timer;
-class EventBooking extends Component {
+class EventCreator extends Component {
   state = {
-    ridersData: null,
+    eventsData: null,
     dropdownSplitOpen: false,
     lastChecked: null,
     displayOptionsIsOpen: false,
@@ -75,10 +75,10 @@ class EventBooking extends Component {
 
   setPostsList = () => {
     this._asyncRequest = docRef.get().then((doc) => {
-      if (!doc.data().riders) return;
+      if (!doc.data().events) return;
       this._asyncRequest = null;
 
-      this.setState({ ridersData: doc.data().riders });
+      this.setState({ eventsData: doc.data().events });
     });
   };
 
@@ -137,7 +137,7 @@ class EventBooking extends Component {
     }
   }
   addPost() {
-    const { title, category, detail, label, ridersData } = this.state;
+    const { title, category, detail, label, eventsData } = this.state;
 
     if (
       Object.keys(category).length === 0 ||
@@ -148,7 +148,7 @@ class EventBooking extends Component {
       return;
     }
 
-    const id = ridersData.length ? ridersData[0].id + 1 : 0,
+    const id = eventsData.length ? eventsData[0].id + 1 : 0,
       date = this.formatDate(new Date()),
       labelColor = this.labelColorSwitch(label.value),
       autoTitle = title.length
@@ -180,7 +180,7 @@ class EventBooking extends Component {
   }
 
   deletePost(id) {
-    const item = this.state.ridersData.filter((e) => e.id === id)[0];
+    const item = this.state.eventsData.filter((e) => e.id === id)[0];
     docRef
       .update({
         posts: firebase.firestore.FieldValue.arrayRemove(item),
@@ -249,7 +249,7 @@ class EventBooking extends Component {
   }
   render() {
     const {
-      ridersData,
+      eventsData,
       isCopied,
       fadeClass,
       errorMessage,
@@ -275,7 +275,7 @@ class EventBooking extends Component {
           <Colxx xxs="12">
             <div className="mb-2">
               <h1>
-                <IntlMessages id="menu.eventbooking" />
+                <IntlMessages id="menu.eventcreator" />
               </h1>
 
               <div className="float-sm-right">
@@ -286,7 +286,7 @@ class EventBooking extends Component {
                   className="top-right-button mr-1 px-4"
                   onClick={() => this.toggleModal()}
                 >
-                  <IntlMessages id="Add New Rider" />
+                  <IntlMessages id="Add New Event" />
                 </Button>
                 <Modal
                   isOpen={this.state.modalOpen}
@@ -430,31 +430,40 @@ class EventBooking extends Component {
             <Row>
               {[
                 {
-                  title: "Moaz M.",
+                  title: "Dahab",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 0,
-                  createDate:"today",
-                  label:"Dahab",
+                  createDate:"13/2/2021",
+                  label:"Cancelled",
                   labelColor:"danger",
-                  category:"Paid"
+                  category:"5/25"
                 },
                 {
-                  title: "Sohayb M.",
+                  title: "Giza",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 1,
-                  createDate:"Yesterday",
-                  label:"Giza",
+                  createDate:"20/2/2021",
+                  label:"In Progress",
                   labelColor:"warning",
-                  category:"Paid"
+                  category:"27/25"
                 },
                 {
-                  title: "A. Gohary",
+                  title: "Fayyoum",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 2,
-                  createDate:"2 hours ago",
-                  label:"Fayyoum",
+                  createDate:"2/1/2021",
+                  label:"Finished",
                   labelColor:"success",
-                  category:"Paid"
+                  category:"15/25"
+                },
+                {
+                  title: "Saqqara",
+                  detail: "A7la mesa 3l nas el kwysa",
+                  id: 3,
+                  createDate:"30/2/2021",
+                  label:"Draft",
+                  labelColor:"light",
+                  category:"19/25"
                 },
                 
               ].map((item, index) => {
@@ -563,4 +572,4 @@ class EventBooking extends Component {
   }
 }
 
-export default EventBooking;
+export default EventCreator;

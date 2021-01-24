@@ -4,6 +4,7 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import todo from "./todo";
 import postBank from "./postBank";
 import eventBooking from "./eventBooking";
+import eventCreator from "./eventCreator";
 // import surveyList from "./survey";
 // import surveyDetail from "./survey-detail";
 // import chat from "./chat";
@@ -15,6 +16,7 @@ const Applications = ({ match }) => (
       <Route path={`${match.url}/todo`} component={todo} />
       <Route path={`${match.url}/postBank`} component={postBank} />
       <Route path={`${match.url}/eventBooking`} component={eventBooking} />
+      <Route path={`${match.url}/eventCreator`} component={eventCreator} />
       {/* <Route
         path={`${match.url}/survey/:surveyid`}
         component={surveyDetail}

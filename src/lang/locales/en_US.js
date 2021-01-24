@@ -74,6 +74,7 @@ module.exports = {
   "menu.eventgenerator": "Event Generator",
   "menu.postbank": "Post Bank",
   "menu.eventbooking": "Event Booking",
+  "menu.eventcreator": "Event Creator",
   "menu.chat": "Chat",
   "menu.ui": "UI",
   "menu.alerts": "Alerts",
