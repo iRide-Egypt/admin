@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import IntlMessages from "Util/IntlMessages";
 import { injectIntl } from "react-intl";
+import DatePicker from "react-datepicker";
 import {
   Row,
   Card,
@@ -44,6 +45,24 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase";
 import { db } from "../../firebase";
 
+//Date picker
+
+import moment from "moment";
+import TagsInput from "react-tagsinput";
+import Switch from "rc-switch";
+import ReactAutosuggest from "Components/ReactAutosuggest";
+import Rating from "Components/Rating";
+import { SliderTooltip, RangeTooltip } from "Components/SliderTooltip";
+import FineUploaderTraditional from "fine-uploader-wrappers";
+import Gallery from "react-fine-uploader";
+
+import "react-tagsinput/react-tagsinput.css";
+import "react-datepicker/dist/react-datepicker.css";
+import "rc-switch/assets/index.css";
+import "rc-slider/assets/index.css";
+import "react-rater/lib/react-rater.css";
+import "react-fine-uploader/gallery/gallery.css";
+
 const docRef = db.collection("app").doc("eventCreator");
 let timer;
 class EventCreator extends Component {
@@ -62,6 +81,9 @@ class EventCreator extends Component {
     label: {},
     category: {},
     status: "ACTIVE",
+
+    //Date
+    startDate: null,
   };
   componentDidMount() {
     this.setPostsList();
@@ -74,12 +96,17 @@ class EventCreator extends Component {
   }
 
   setPostsList = () => {
-    this._asyncRequest = docRef.get().then((doc) => {
-      if (!doc.data().events) return;
-      this._asyncRequest = null;
+    this._asyncRequest = docRef
+      .get()
+      .then((doc) => {
+        if (!doc.data().events) return;
+        this._asyncRequest = null;
 
-      this.setState({ eventsData: doc.data().events });
-    });
+        this.setState({ eventsData: doc.data().events });
+      })
+      .catch((err) => {
+        this.setState({ eventsData: [] });
+      });
   };
 
   toggleDisplayOptions() {
@@ -139,44 +166,45 @@ class EventCreator extends Component {
   addPost() {
     const { title, category, detail, label, eventsData } = this.state;
 
-    if (
-      Object.keys(category).length === 0 ||
-      !detail.length ||
-      Object.keys(label).length === 0
-    ) {
-      this.setState({ isError: true });
-      return;
-    }
+    // if (
+    //   Object.keys(category).length === 0 ||
+    //   !detail.length ||
+    //   Object.keys(label).length === 0
+    // ) {
+    //   this.setState({ isError: true });
+    //   return;
+    // }
 
-    const id = eventsData.length ? eventsData[0].id + 1 : 0,
-      date = this.formatDate(new Date()),
-      labelColor = this.labelColorSwitch(label.value),
-      autoTitle = title.length
-        ? title
-        : detail.split(" ").slice(0, 5).join(" ") + "...";
+    // const id = eventsData.length ? eventsData[0].id + 1 : 0,
+    //   date = this.formatDate(new Date()),
+    //   labelColor = this.labelColorSwitch(label.value),
+    //   autoTitle = title.length
+    //     ? title
+    //     : detail.split(" ").slice(0, 5).join(" ") + "...";
 
-    const item = {
-      createDate: date,
-      id: id,
-      title: autoTitle,
-      detail: detail,
-      label: label.value,
-      category: category.value,
-      labelColor: labelColor,
-    };
+    // const item = {
+    //   createDate: date,
+    //   id: id,
+    //   title: autoTitle,
+    //   detail: detail,
+    //   label: label.value,
+    //   category: category.value,
+    //   labelColor: labelColor,
+    // };
+    console.log(this.state)
 
-    docRef
-      .update({
-        riders: firebase.firestore.FieldValue.arrayUnion(item),
-      })
-      .then(() => {
-        this.setPostsList();
-        this.cleanModelState();
-        this.toggleModal();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    // docRef
+    //   .update({
+    //     riders: firebase.firestore.FieldValue.arrayUnion(item),
+    //   })
+    //   .then(() => {
+    //     this.setPostsList();
+    //     this.cleanModelState();
+    //     this.toggleModal();
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   }
 
   deletePost(id) {
@@ -247,7 +275,40 @@ class EventCreator extends Component {
       };
     });
   }
+
+  //Date picker
+
+  //   onSuggestionChange = (event, { newValue }) => {
+  //     this.setState({
+  //       suggestionValue: newValue,
+  //     });
+  //   };
+
+  //   handleTagChange(tags) {
+  //     this.setState({ tags });
+  //   }
+
+  handleChangeMulti = (selectedOptions) => {
+    this.setState({ selectedOptions });
+  };
+
+  //   handleChange = (selectedOption) => {
+  //     this.setState({ selectedOption });
+  //   };
+
+  handleChangeDate(date) {
+    console.log(this.formatDate(date));
+    this.setState({
+      startDate: date,
+    });
+  }
+
   render() {
+    const SELECT_DATA = [
+      { label: "7kak", value: "7kak", key: 0 },
+      { label: "Byfasel", value: "Byfasel", key: 1 },
+      { label: "Byhlek el 5el", value: "Byhlek el 5el", key: 2 },
+    ];
     const {
       eventsData,
       isCopied,
@@ -258,12 +319,21 @@ class EventCreator extends Component {
       isOpenList,
     } = this.state;
 
-    const categories = [
+    const studs = [
       { label: "Paid", value: "Paid" },
       { label: "Normal", value: "Normal" },
     ];
-    const labels = [
-      { label: "General", value: "General" },
+    const programs = [
+      { label: "Dahab 1", value: "Dahab 1" },
+      { label: "Dahab 2", value: "Dahab 2" },
+      { label: "Fayyoum 1", value: "Fayyoum 1" },
+      { label: "Fayyoum 2", value: "Fayyoum 2" },
+      { label: "Giza 1", value: "Giza 1" },
+      { label: "Giza 2", value: "Giza 2" },
+      { label: "Saqqara 1", value: "Saqqara 1" },
+      { label: "Saqqara 2", value: "Saqqara 2" },
+    ];
+    const types = [
       { label: "Dahab", value: "Dahab" },
       { label: "Fayyoum", value: "Fayyoum" },
       { label: "Giza", value: "Giza" },
@@ -290,15 +360,102 @@ class EventCreator extends Component {
                 </Button>
                 <Modal
                   isOpen={this.state.modalOpen}
-                  toggle={this.toggleModal}
+                  toggle={() => this.toggleModal()}
                   wrapClassName="modal-right"
-                  backdrop="static"
+                //   backdrop="static"
                 >
                   <ModalHeader toggle={() => this.toggleModal()}>
-                    <IntlMessages id="survey.add-new-title" />
+                    <IntlMessages id="Add New Event" />
                   </ModalHeader>
                   <ModalBody>
                     <Label className="mt-4">
+                      <IntlMessages id="Date *" />
+                    </Label>
+                    <DatePicker
+                      selected={this.state.startDate}
+                      onChange={(e) => this.handleChangeDate(e)}
+                      placeholderText={"Pick A Date"}
+                      dateFormat="DD/MM/YYYY"
+                      minDate={new Date()}
+                      maxDate={
+                        new Date(new Date().setMonth(new Date().getMonth() + 2))
+                      }
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Type *" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={types.map((x, i) => {
+                        return {
+                          label: x.label,
+                          value: x.label,
+                          key: i,
+                          color: x.color,
+                        };
+                      })}
+                      value={this.state.type}
+                      onChange={(val) => {
+                        this.setState({ type: val, isError: false });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Program *" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={programs.map((x, i) => {
+                        return { label: x.label, value: x.value, key: i };
+                      })}
+                      value={this.state.program}
+                      onChange={(val) => {
+                        this.setState({ program: val, isError: false });
+                      }}
+                    />
+
+                    {/* <Label className="mt-4">
+                      <IntlMessages id="Stud" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={studs.map((x, i) => {
+                        return {
+                          label: x.label,
+                          value: x.label,
+                          key: i,
+                          color: x.color,
+                        };
+                      })}
+                      value={this.state.stud}
+                      onChange={(val) => {
+                        this.setState({ stud: val, isError: false });
+                      }}
+                    /> */}
+                    <Label className="mt-4">
+                      <IntlMessages id="Tag" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      isMulti
+                      name="form-field-name"
+                      value={this.state.selectedOptions}
+                      onChange={(e) => this.handleChangeMulti(e)}
+                      options={SELECT_DATA}
+                    />
+
+                    {/* <Label className="mt-4">
                       <IntlMessages id="survey.title" />
                     </Label>
                     <Input
@@ -307,9 +464,10 @@ class EventCreator extends Component {
                       onChange={(event) => {
                         this.setState({ title: event.target.value });
                       }}
-                    />
+                    /> */}
+
                     <Label className="mt-4">
-                      <IntlMessages id="todo.detail" />
+                      <IntlMessages id="Notes" />
                     </Label>
                     <Input
                       type="textarea"
@@ -319,43 +477,6 @@ class EventCreator extends Component {
                           detail: event.target.value,
                           isError: false,
                         });
-                      }}
-                    />
-                    <Label className="mt-4">
-                      <IntlMessages id="survey.category" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      name="form-field-name"
-                      options={categories.map((x, i) => {
-                        return { label: x.label, value: x.value, key: i };
-                      })}
-                      value={this.state.category}
-                      onChange={(val) => {
-                        this.setState({ category: val, isError: false });
-                      }}
-                    />
-                    <Label className="mt-4">
-                      <IntlMessages id="survey.label" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      name="form-field-name"
-                      options={labels.map((x, i) => {
-                        return {
-                          label: x.label,
-                          value: x.label,
-                          key: i,
-                          color: x.color,
-                        };
-                      })}
-                      value={this.state.label}
-                      onChange={(val) => {
-                        this.setState({ label: val, isError: false });
                       }}
                     />
 
@@ -433,39 +554,38 @@ class EventCreator extends Component {
                   title: "Dahab",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 0,
-                  createDate:"13/2/2021",
-                  label:"Cancelled",
-                  labelColor:"danger",
-                  category:"5/25"
+                  createDate: "13/2/2021",
+                  label: "Cancelled",
+                  labelColor: "danger",
+                  category: "5/25",
                 },
                 {
                   title: "Giza",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 1,
-                  createDate:"20/2/2021",
-                  label:"In Progress",
-                  labelColor:"warning",
-                  category:"27/25"
+                  createDate: "20/2/2021",
+                  label: "In Progress",
+                  labelColor: "warning",
+                  category: "27/25",
                 },
                 {
                   title: "Fayyoum",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 2,
-                  createDate:"2/1/2021",
-                  label:"Finished",
-                  labelColor:"success",
-                  category:"15/25"
+                  createDate: "2/1/2021",
+                  label: "Finished",
+                  labelColor: "success",
+                  category: "15/25",
                 },
                 {
                   title: "Saqqara",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 3,
-                  createDate:"30/2/2021",
-                  label:"Draft",
-                  labelColor:"light",
-                  category:"19/25"
+                  createDate: "30/2/2021",
+                  label: "Draft",
+                  labelColor: "light",
+                  category: "19/25",
                 },
-                
               ].map((item, index) => {
                 return (
                   <Fragment key={0}>
@@ -525,7 +645,6 @@ class EventCreator extends Component {
                                 cursor: "pointer",
                               }}
                             />
-                   
                           </div>
                         </div>
                       </Card>
@@ -533,7 +652,7 @@ class EventCreator extends Component {
 
                     {/* 2nd Card */}
                     <Colxx xxs="12">
-                    <UncontrolledCollapse toggler={"#toggler" + item.id}>
+                      <UncontrolledCollapse toggler={"#toggler" + item.id}>
                         <Card className="mb-3">
                           <CardBody>
                             Lorem ipsum dolor sit amet consectetur adipisicing
@@ -548,23 +667,7 @@ class EventCreator extends Component {
                   </Fragment>
                 );
               })}
-     
             </Row>
-            {isCopied ? (
-              <div
-                className={
-                  "btn btn-warning py-1 px-1 fixed-bottom rounded-pill fadeIn"
-                }
-                style={{
-                  left: "45%",
-                  bottom: "60px",
-                  width: "150px",
-                  cursor: "default",
-                }}
-              >
-                Copied to clipboard
-              </div>
-            ) : null}
           </Colxx>
         </Row>
       </Fragment>

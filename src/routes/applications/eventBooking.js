@@ -74,12 +74,17 @@ class EventBooking extends Component {
   }
 
   setPostsList = () => {
-    this._asyncRequest = docRef.get().then((doc) => {
-      if (!doc.data().riders) return;
-      this._asyncRequest = null;
+    this._asyncRequest = docRef
+      .get()
+      .then((doc) => {
+        if (!doc.data().riders) return;
+        this._asyncRequest = null;
 
-      this.setState({ ridersData: doc.data().riders });
-    });
+        this.setState({ ridersData: doc.data().riders });
+      })
+      .catch((err) => {
+        this.setState({ eventsData: [] });
+      });
   };
 
   toggleDisplayOptions() {
@@ -139,44 +144,44 @@ class EventBooking extends Component {
   addPost() {
     const { title, category, detail, label, ridersData } = this.state;
 
-    if (
-      Object.keys(category).length === 0 ||
-      !detail.length ||
-      Object.keys(label).length === 0
-    ) {
-      this.setState({ isError: true });
-      return;
-    }
+    // if (
+    //   Object.keys(category).length === 0 ||
+    //   !detail.length ||
+    //   Object.keys(label).length === 0
+    // ) {
+    //   this.setState({ isError: true });
+    //   return;
+    // }
 
-    const id = ridersData.length ? ridersData[0].id + 1 : 0,
-      date = this.formatDate(new Date()),
-      labelColor = this.labelColorSwitch(label.value),
-      autoTitle = title.length
-        ? title
-        : detail.split(" ").slice(0, 5).join(" ") + "...";
+    // const id = ridersData.length ? ridersData[0].id + 1 : 0,
+    //   date = this.formatDate(new Date()),
+    //   labelColor = this.labelColorSwitch(label.value),
+    //   autoTitle = title.length
+    //     ? title
+    //     : detail.split(" ").slice(0, 5).join(" ") + "...";
 
-    const item = {
-      createDate: date,
-      id: id,
-      title: autoTitle,
-      detail: detail,
-      label: label.value,
-      category: category.value,
-      labelColor: labelColor,
-    };
-
-    docRef
-      .update({
-        riders: firebase.firestore.FieldValue.arrayUnion(item),
-      })
-      .then(() => {
-        this.setPostsList();
-        this.cleanModelState();
-        this.toggleModal();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    // const item = {
+    //   createDate: date,
+    //   id: id,
+    //   title: autoTitle,
+    //   detail: detail,
+    //   label: label.value,
+    //   category: category.value,
+    //   labelColor: labelColor,
+    // };
+    console.log(this.state);
+    // docRef
+    //   .update({
+    //     riders: firebase.firestore.FieldValue.arrayUnion(item),
+    //   })
+    //   .then(() => {
+    //     this.setPostsList();
+    //     this.cleanModelState();
+    //     this.toggleModal();
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   }
 
   deletePost(id) {
@@ -247,6 +252,10 @@ class EventBooking extends Component {
       };
     });
   }
+
+  handleChangeMulti = (selectedOptions) => {
+    this.setState({ selectedOptions });
+  };
   render() {
     const {
       ridersData,
@@ -258,16 +267,31 @@ class EventBooking extends Component {
       isOpenList,
     } = this.state;
 
-    const categories = [
-      { label: "Paid", value: "Paid" },
+    const ridingEx = [
+      { label: "Beginner", value: "Beginner" },
       { label: "Normal", value: "Normal" },
+      { label: "Hard", value: "Hard" },
     ];
-    const labels = [
-      { label: "General", value: "General" },
-      { label: "Dahab", value: "Dahab" },
-      { label: "Fayyoum", value: "Fayyoum" },
-      { label: "Giza", value: "Giza" },
-      { label: "Saqqara", value: "Saqqara" },
+    const paymentMethod = [
+      { label: "Vodafone Cash", value: "Vodafone Cash" },
+      { label: "Etisalat Cash", value: "Etisalat Cash" },
+      { label: "Fawry", value: "Fawry" },
+      { label: "Meeting", value: "Meeting" },
+      { label: "In The Ride", value: "In The Ride" },
+      { label: "Bank Transfer", value: "Bank Transfer" },
+      { label: "Other", value: "Other" },
+    ];
+    const whereKnowUs = [
+      { label: "Facebook", value: "Facebook" },
+      { label: "Instagram", value: "Instagram" },
+      { label: "Website", value: "Website" },
+      { label: "Friend", value: "Friend" },
+      { label: "Other", value: "Other" },
+    ];
+    const SELECT_DATA = [
+      { label: "7kak", value: "7kak", key: 0 },
+      { label: "Byfasel", value: "Byfasel", key: 1 },
+      { label: "Byhlek el 5el", value: "Byhlek el 5el", key: 2 },
     ];
     return (
       <Fragment>
@@ -290,62 +314,134 @@ class EventBooking extends Component {
                 </Button>
                 <Modal
                   isOpen={this.state.modalOpen}
-                  toggle={this.toggleModal}
+                  toggle={() => this.toggleModal()}
                   wrapClassName="modal-right"
-                  backdrop="static"
+                  // backdrop={true}
                 >
                   <ModalHeader toggle={() => this.toggleModal()}>
-                    <IntlMessages id="survey.add-new-title" />
+                    <IntlMessages id="Add New Rider" />
                   </ModalHeader>
                   <ModalBody>
                     <Label className="mt-4">
-                      <IntlMessages id="survey.title" />
+                      <IntlMessages id="Name *" />
                     </Label>
                     <Input
                       type="text"
-                      defaultValue={this.state.title}
+                      defaultValue={this.state.name}
                       onChange={(event) => {
-                        this.setState({ title: event.target.value });
+                        this.setState({ name: event.target.value });
                       }}
                     />
                     <Label className="mt-4">
-                      <IntlMessages id="todo.detail" />
+                      <IntlMessages id="Phone Number *" />
+                    </Label>
+                    <Input
+                      type="tel"
+                      defaultValue={this.state.phone}
+                      onChange={(event) => {
+                        this.setState({ phone: event.target.value });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Whatsapp Number *" />
+                    </Label>
+                    <Input
+                      type="tel"
+                      defaultValue={this.state.whatsapp}
+                      onChange={(event) => {
+                        this.setState({ whatsapp: event.target.value });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Discount *" />
+                    </Label>
+                    <Input
+                      type="number"
+                      defaultValue={this.state.discount}
+                      onChange={(event) => {
+                        this.setState({ discount: event.target.value });
+                      }}
+                    />
+
+                    <Separator className="mt-5 mb-5" />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Email" />
+                    </Label>
+                    <Input
+                      type="email"
+                      defaultValue={this.state.email}
+                      onChange={(event) => {
+                        this.setState({ email: event.target.value });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Age" />
+                    </Label>
+                    <Input
+                      type="number"
+                      defaultValue={this.state.age}
+                      onChange={(event) => {
+                        this.setState({ age: event.target.value });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Medical History" />
                     </Label>
                     <Input
                       type="textarea"
-                      defaultValue={this.state.detail}
+                      defaultValue={this.state.medicalHistory}
                       onChange={(event) => {
                         this.setState({
-                          detail: event.target.value,
+                          medicalHistory: event.target.value,
                           isError: false,
                         });
                       }}
                     />
+
                     <Label className="mt-4">
-                      <IntlMessages id="survey.category" />
+                      <IntlMessages id="Riding Experience" />
                     </Label>
                     <Select
                       components={{ Input: CustomSelectInput }}
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
-                      options={categories.map((x, i) => {
+                      options={ridingEx.map((x, i) => {
                         return { label: x.label, value: x.value, key: i };
                       })}
-                      value={this.state.category}
+                      value={this.state.ridingEx}
                       onChange={(val) => {
-                        this.setState({ category: val, isError: false });
+                        this.setState({ ridingEx: val, isError: false });
                       }}
                     />
+
                     <Label className="mt-4">
-                      <IntlMessages id="survey.label" />
+                      <IntlMessages id="Riding Experience Notes" />
+                    </Label>
+                    <Input
+                      type="textarea"
+                      defaultValue={this.state.ridingExNotes}
+                      onChange={(event) => {
+                        this.setState({
+                          ridingExNotes: event.target.value,
+                          isError: false,
+                        });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Where did they know us" />
                     </Label>
                     <Select
                       components={{ Input: CustomSelectInput }}
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
-                      options={labels.map((x, i) => {
+                      options={whereKnowUs.map((x, i) => {
                         return {
                           label: x.label,
                           value: x.label,
@@ -353,12 +449,72 @@ class EventBooking extends Component {
                           color: x.color,
                         };
                       })}
-                      value={this.state.label}
+                      value={this.state.whereKnowUs}
                       onChange={(val) => {
-                        this.setState({ label: val, isError: false });
+                        this.setState({ whereKnowUs: val, isError: false });
                       }}
                     />
 
+                    <Label className="mt-4">
+                      <IntlMessages id="Payment MethodpaymentMethod" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={paymentMethod.map((x, i) => {
+                        return {
+                          label: x.label,
+                          value: x.label,
+                          key: i,
+                          color: x.color,
+                        };
+                      })}
+                      value={this.state.paymentMethod}
+                      onChange={(val) => {
+                        this.setState({ paymentMethod: val, isError: false });
+                      }}
+                    />
+                     <Label className="mt-4">
+                      <IntlMessages id="Tag" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      isMulti
+                      name="form-field-name"
+                      value={this.state.selectedOptions}
+                      onChange={(e) => this.handleChangeMulti(e)}
+                      options={SELECT_DATA}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Notes" />
+                    </Label>
+                    <Input
+                      type="textarea"
+                      defaultValue={this.state.notes}
+                      onChange={(event) => {
+                        this.setState({
+                          notes: event.target.value,
+                          isError: false,
+                        });
+                      }}
+                    />
+                    <CustomInput
+                      checked={this.state.isKnowsAboutUs}
+                      onChange={(e)=>{
+                        this.setState({
+                          isKnowsAboutUs: e.target.checked,
+                          isError: false,
+                        });
+                      }}
+                      className="mt-4"
+                      type="checkbox"
+                      id="exCustomCheckbox"
+                      label="Knows About Our Other Events?"
+                    />
                     {/* <Label className="mt-4">
                       <IntlMessages id="survey.status" />
                     </Label>
@@ -433,30 +589,29 @@ class EventBooking extends Component {
                   title: "Moaz M.",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 0,
-                  createDate:"today",
-                  label:"Dahab",
-                  labelColor:"danger",
-                  category:"Paid"
+                  createDate: "today",
+                  label: "Dahab",
+                  labelColor: "danger",
+                  category: "Paid",
                 },
                 {
                   title: "Sohayb M.",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 1,
-                  createDate:"Yesterday",
-                  label:"Giza",
-                  labelColor:"warning",
-                  category:"Paid"
+                  createDate: "Yesterday",
+                  label: "Giza",
+                  labelColor: "warning",
+                  category: "Paid",
                 },
                 {
                   title: "A. Gohary",
                   detail: "A7la mesa 3l nas el kwysa",
                   id: 2,
-                  createDate:"2 hours ago",
-                  label:"Fayyoum",
-                  labelColor:"success",
-                  category:"Paid"
+                  createDate: "2 hours ago",
+                  label: "Fayyoum",
+                  labelColor: "success",
+                  category: "Paid",
                 },
-                
               ].map((item, index) => {
                 return (
                   <Fragment key={0}>
@@ -516,7 +671,6 @@ class EventBooking extends Component {
                                 cursor: "pointer",
                               }}
                             />
-                   
                           </div>
                         </div>
                       </Card>
@@ -524,7 +678,7 @@ class EventBooking extends Component {
 
                     {/* 2nd Card */}
                     <Colxx xxs="12">
-                    <UncontrolledCollapse toggler={"#toggler" + item.id}>
+                      <UncontrolledCollapse toggler={"#toggler" + item.id}>
                         <Card className="mb-3">
                           <CardBody>
                             Lorem ipsum dolor sit amet consectetur adipisicing
@@ -539,23 +693,7 @@ class EventBooking extends Component {
                   </Fragment>
                 );
               })}
-     
             </Row>
-            {isCopied ? (
-              <div
-                className={
-                  "btn btn-warning py-1 px-1 fixed-bottom rounded-pill fadeIn"
-                }
-                style={{
-                  left: "45%",
-                  bottom: "60px",
-                  width: "150px",
-                  cursor: "default",
-                }}
-              >
-                Copied to clipboard
-              </div>
-            ) : null}
           </Colxx>
         </Row>
       </Fragment>

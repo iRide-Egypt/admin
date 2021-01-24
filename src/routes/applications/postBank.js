@@ -29,6 +29,8 @@ import {
   ModalBody,
   ModalFooter,
   Input,
+  Alert,
+  UncontrolledAlert,
 } from "reactstrap";
 import Select from "react-select";
 import CustomSelectInput from "Components/CustomSelectInput";
@@ -38,17 +40,21 @@ import { NavLink } from "react-router-dom";
 
 import firebase from "firebase";
 import { db } from "../../firebase";
-
+import { NotificationManager } from "Components/ReactNotifications";
 const docRef = db.collection("app").doc("postBank");
 let timer;
 class PostBank extends Component {
+
+
   state = {
+    visible: true,
+
     postData: null,
     dropdownSplitOpen: false,
     lastChecked: null,
     displayOptionsIsOpen: false,
     errorMessage: null,
-    isCopied:false,
+    isCopied: false,
     //Modal
     modalOpen: false,
     title: "",
@@ -65,7 +71,9 @@ class PostBank extends Component {
       this._asyncRequest.cancel();
     }
   }
-
+  onDismiss() {
+    this.setState({ visible: false });
+  }
   setPostsList = () => {
     this._asyncRequest = docRef.get().then((doc) => {
       if (!doc.data().posts) return;
@@ -131,9 +139,13 @@ class PostBank extends Component {
   }
   addPost() {
     const { title, category, detail, label, postData } = this.state;
-    
-    if(Object.keys(category).length === 0  || !detail.length || Object.keys(label).length === 0){
-      this.setState({isError:true});
+
+    if (
+      Object.keys(category).length === 0 ||
+      !detail.length ||
+      Object.keys(label).length === 0
+    ) {
+      this.setState({ isError: true });
       return;
     }
 
@@ -160,6 +172,7 @@ class PostBank extends Component {
       })
       .then(() => {
         this.setPostsList();
+        this.notification("You have successfully created a new post!")
         this.cleanModelState();
         this.toggleModal();
       })
@@ -185,7 +198,7 @@ class PostBank extends Component {
     var pattern = /[\u0600-\u06FF\u0750-\u077F]/;
     console.log(pattern.test(text));
     return pattern.test(text);
-}
+  }
   textToClipboard(text) {
     clearInterval(timer);
     var dummy = document.createElement("textarea");
@@ -196,14 +209,20 @@ class PostBank extends Component {
 
     document.execCommand("copy");
     this.iosCopyToClipboard(dummy);
-    this.setState({isCopied:true})
 
+    this.notification("Copied To ClipBoard!")
     document.body.removeChild(dummy);
 
-
-    timer = setTimeout(() => {
-      this.setState({isCopied:false})
-    }, 3000);
+  }
+  notification(message="Something Happened!", title="", style="filled"){
+    NotificationManager.success(
+      message,
+      title,
+      3000,
+      null,
+      null,
+      style
+    );
   }
   iosCopyToClipboard(el) {
     var oldContentEditable = el.contentEditable,
@@ -225,6 +244,7 @@ class PostBank extends Component {
 
     document.execCommand("copy");
   }
+
 
   render() {
     const { postData, isCopied, fadeClass, errorMessage, isError } = this.state;
@@ -286,7 +306,10 @@ class PostBank extends Component {
                       type="textarea"
                       defaultValue={this.state.detail}
                       onChange={(event) => {
-                        this.setState({ detail: event.target.value, isError:false });
+                        this.setState({
+                          detail: event.target.value,
+                          isError: false,
+                        });
                       }}
                     />
                     <Label className="mt-4">
@@ -302,7 +325,7 @@ class PostBank extends Component {
                       })}
                       value={this.state.category}
                       onChange={(val) => {
-                        this.setState({ category: val , isError:false});
+                        this.setState({ category: val, isError: false });
                       }}
                     />
                     <Label className="mt-4">
@@ -323,7 +346,7 @@ class PostBank extends Component {
                       })}
                       value={this.state.label}
                       onChange={(val) => {
-                        this.setState({ label: val , isError:false});
+                        this.setState({ label: val, isError: false });
                       }}
                     />
 
@@ -357,7 +380,11 @@ class PostBank extends Component {
                       }}
                     /> */}
                   </ModalBody>
-                    {isError && <p className="text-danger text-center">Detail, Category and Label must be filled!</p>}
+                  {isError && (
+                    <p className="text-danger text-center">
+                      Detail, Category and Label must be filled!
+                    </p>
+                  )}
                   <ModalFooter>
                     <Button
                       color="danger"
@@ -407,7 +434,7 @@ class PostBank extends Component {
                               {/* <i
                                 onClick={() => {
                                   this.changeItemStatus(item.id);
-    
+
                                 }}
                                 className={`${
                                    "simple-icon-arrow-right heading-icon"
@@ -418,7 +445,13 @@ class PostBank extends Component {
                                     : null
                                 }
                               /> */}
-                              <span className={this.isArabic(item.detail)?"align-middle d-inline-block rtl":"align-middle d-inline-block"}>
+                              <span
+                                className={
+                                  this.isArabic(item.detail)
+                                    ? "align-middle d-inline-block rtl"
+                                    : "align-middle d-inline-block"
+                                }
+                              >
                                 {item.title}
                               </span>
                             </NavLink>
@@ -458,8 +491,10 @@ class PostBank extends Component {
                               }}
                             />
                             <i
+                            // onClick={(e)=>{this.createNotification("success", "filled")}}
                               onClick={() => {
                                 this.textToClipboard(item.detail);
+                                // this.createNotification("success", "filled");
                               }}
                               className={`${"simple-icon-notebook heading-icon"}`}
                               onMouseOver={(e) =>
@@ -495,8 +530,18 @@ class PostBank extends Component {
                             /> */}
                           </div>
                         </div>
-                        <div className="card-body pt-1" style={{whiteSpace:"pre-wrap"}}>
-                          <p className={this.isArabic(item.detail)?"mb-0 rtl":"mb-0"}>{item.detail}</p>
+                        <div
+                          className="card-body pt-1"
+                          style={{ whiteSpace: "pre-wrap" }}
+                        >
+                          <p
+                            className={
+                              this.isArabic(item.detail) ? "mb-0 rtl" : "mb-0"
+                            }
+                          >
+                            {item.detail}
+                          </p>
+                   
                         </div>
                       </Card>
                     </Colxx>
@@ -506,8 +551,55 @@ class PostBank extends Component {
                 <div className="loading" />
               )}
             </Row>
-          {isCopied?<div className={"btn btn-warning py-1 px-1 fixed-bottom rounded-pill fadeIn"} style={{left:"45%", bottom:"60px", width:"150px", cursor:"default"}}>Copied to clipboard</div>:null}
+            {/* {isCopied ? (
+              <div
+                className={
+                  "btn btn-warning py-1 px-1 fixed-bottom rounded-pill fadeIn"
+                }
+                style={{
+                  left: "45%",
+                  bottom: "60px",
+                  width: "150px",
+                  cursor: "default",
+                }}
+              >
+                Copied to clipboard
+              </div>
+            ) : null} */}
+
           </Colxx>
+
+
+
+          {/* <Colxx xxs="12">
+            <Card className="mb-4">
+              <CardBody>
+                <CardTitle>
+                  <IntlMessages id="alert.react-notifications" />
+                </CardTitle>
+
+                <CardSubtitle>
+                  <IntlMessages id="alert.filled" />
+                </CardSubtitle>
+
+                <Button
+                  className="mb-3"
+                  color="success"
+                  onClick={this.createNotification("success", "filled")}
+                >
+                  <IntlMessages id="alert.success" />
+                </Button>{" "}
+
+
+              </CardBody>
+            </Card>
+
+
+          </Colxx> */}
+
+
+
+
         </Row>
       </Fragment>
     );
