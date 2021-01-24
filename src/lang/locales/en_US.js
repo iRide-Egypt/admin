@@ -73,6 +73,7 @@ module.exports = {
   "menu.survey": "Survey",
   "menu.eventgenerator": "Event Generator",
   "menu.postbank": "Post Bank",
+  "menu.eventbooking": "Event Booking",
   "menu.chat": "Chat",
   "menu.ui": "UI",
   "menu.alerts": "Alerts",

@@ -3,6 +3,7 @@ import { Redirect, Route, Switch } from "react-router-dom";
 
 import todo from "./todo";
 import postBank from "./postBank";
+import eventBooking from "./eventBooking";
 // import surveyList from "./survey";
 // import surveyDetail from "./survey-detail";
 // import chat from "./chat";
@@ -13,6 +14,7 @@ const Applications = ({ match }) => (
       <Redirect exact from={`${match.url}/`} to={`${match.url}/todo`} />
       <Route path={`${match.url}/todo`} component={todo} />
       <Route path={`${match.url}/postBank`} component={postBank} />
+      <Route path={`${match.url}/eventBooking`} component={eventBooking} />
       {/* <Route
         path={`${match.url}/survey/:surveyid`}
         component={surveyDetail}

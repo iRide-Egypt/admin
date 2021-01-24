@@ -29,7 +29,11 @@ import {
   ModalBody,
   ModalFooter,
   Input,
+  Accordion,
+  Toggle,
+  CardHeader
 } from "reactstrap";
+
 import Select from "react-select";
 import CustomSelectInput from "Components/CustomSelectInput";
 
@@ -39,16 +43,17 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase";
 import { db } from "../../firebase";
 
-const docRef = db.collection("app").doc("postBank");
+const docRef = db.collection("app").doc("eventBooking");
 let timer;
-class PostBank extends Component {
+class EventBooking extends Component {
   state = {
     postData: null,
     dropdownSplitOpen: false,
     lastChecked: null,
     displayOptionsIsOpen: false,
     errorMessage: null,
-    isCopied:false,
+    isCopied: false,
+    isOpen:false,
     //Modal
     modalOpen: false,
     title: "",
@@ -68,10 +73,10 @@ class PostBank extends Component {
 
   setPostsList = () => {
     this._asyncRequest = docRef.get().then((doc) => {
-      if (!doc.data().posts) return;
+      if (!doc.data().riders) return;
       this._asyncRequest = null;
 
-      this.setState({ postData: doc.data().posts });
+      this.setState({ postData: doc.data().riders });
     });
   };
 
@@ -131,9 +136,13 @@ class PostBank extends Component {
   }
   addPost() {
     const { title, category, detail, label, postData } = this.state;
-    
-    if(Object.keys(category).length === 0  || !detail.length || Object.keys(label).length === 0){
-      this.setState({isError:true});
+
+    if (
+      Object.keys(category).length === 0 ||
+      !detail.length ||
+      Object.keys(label).length === 0
+    ) {
+      this.setState({ isError: true });
       return;
     }
 
@@ -156,7 +165,7 @@ class PostBank extends Component {
 
     docRef
       .update({
-        posts: firebase.firestore.FieldValue.arrayUnion(item),
+        riders: firebase.firestore.FieldValue.arrayUnion(item),
       })
       .then(() => {
         this.setPostsList();
@@ -185,7 +194,7 @@ class PostBank extends Component {
     var pattern = /[\u0600-\u06FF\u0750-\u077F]/;
     console.log(pattern.test(text));
     return pattern.test(text);
-}
+  }
   textToClipboard(text) {
     clearInterval(timer);
     var dummy = document.createElement("textarea");
@@ -196,13 +205,12 @@ class PostBank extends Component {
 
     document.execCommand("copy");
     this.iosCopyToClipboard(dummy);
-    this.setState({isCopied:true})
+    this.setState({ isCopied: true });
 
     document.body.removeChild(dummy);
 
-
     timer = setTimeout(() => {
-      this.setState({isCopied:false})
+      this.setState({ isCopied: false });
     }, 3000);
   }
   iosCopyToClipboard(el) {
@@ -225,9 +233,16 @@ class PostBank extends Component {
 
     document.execCommand("copy");
   }
-
+  toggleAccordion() {
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        isOpen: !prevState.isOpen,
+      };
+    });
+  }
   render() {
-    const { postData, isCopied, fadeClass, errorMessage, isError } = this.state;
+    const { postData, isCopied, fadeClass, errorMessage, isError,isOpen } = this.state;
 
     const categories = [
       { label: "Paid", value: "Paid" },
@@ -246,7 +261,7 @@ class PostBank extends Component {
           <Colxx xxs="12">
             <div className="mb-2">
               <h1>
-                <IntlMessages id="menu.postbank" />
+                <IntlMessages id="menu.eventbooking" />
               </h1>
 
               <div className="float-sm-right">
@@ -257,7 +272,7 @@ class PostBank extends Component {
                   className="top-right-button mr-1"
                   onClick={() => this.toggleModal()}
                 >
-                  <IntlMessages id="Add New Post" />
+                  <IntlMessages id="Add New Rider" />
                 </Button>
                 <Modal
                   isOpen={this.state.modalOpen}
@@ -286,7 +301,10 @@ class PostBank extends Component {
                       type="textarea"
                       defaultValue={this.state.detail}
                       onChange={(event) => {
-                        this.setState({ detail: event.target.value, isError:false });
+                        this.setState({
+                          detail: event.target.value,
+                          isError: false,
+                        });
                       }}
                     />
                     <Label className="mt-4">
@@ -302,7 +320,7 @@ class PostBank extends Component {
                       })}
                       value={this.state.category}
                       onChange={(val) => {
-                        this.setState({ category: val , isError:false});
+                        this.setState({ category: val, isError: false });
                       }}
                     />
                     <Label className="mt-4">
@@ -323,7 +341,7 @@ class PostBank extends Component {
                       })}
                       value={this.state.label}
                       onChange={(val) => {
-                        this.setState({ label: val , isError:false});
+                        this.setState({ label: val, isError: false });
                       }}
                     />
 
@@ -357,7 +375,11 @@ class PostBank extends Component {
                       }}
                     /> */}
                   </ModalBody>
-                    {isError && <p className="text-danger text-center">Detail, Category and Label must be filled!</p>}
+                  {isError && (
+                    <p className="text-danger text-center">
+                      Detail, Category and Label must be filled!
+                    </p>
+                  )}
                   <ModalFooter>
                     <Button
                       color="danger"
@@ -391,6 +413,25 @@ class PostBank extends Component {
             </div>
             <Separator className="mb-5" />
             <Row>
+
+
+
+            {/* <div>
+      <Button color="primary" onClick={this.toggleAccordion} style={{ marginBottom: '1rem' }}>Toggle</Button>
+      <Collapse isOpen={isOpen}>
+        <Card>
+          <CardBody>
+          Anim pariatur cliche reprehenderit,
+           enim eiusmod high life accusamus terry richardson ad squid. Nihil
+           anim keffiyeh helvetica, craft beer labore wes anderson cred
+           nesciunt sapiente ea proident.
+          </CardBody>
+        </Card>
+      </Collapse>
+    </div> */}
+
+
+
               {postData ? (
                 postData.map((item, index) => {
                   return (
@@ -418,7 +459,13 @@ class PostBank extends Component {
                                     : null
                                 }
                               /> */}
-                              <span className={this.isArabic(item.detail)?"align-middle d-inline-block rtl":"align-middle d-inline-block"}>
+                              <span
+                                className={
+                                  this.isArabic(item.detail)
+                                    ? "align-middle d-inline-block rtl"
+                                    : "align-middle d-inline-block"
+                                }
+                              >
                                 {item.title}
                               </span>
                             </NavLink>
@@ -495,8 +542,17 @@ class PostBank extends Component {
                             /> */}
                           </div>
                         </div>
-                        <div className="card-body pt-1" style={{whiteSpace:"pre-wrap"}}>
-                          <p className={this.isArabic(item.detail)?"mb-0 rtl":"mb-0"}>{item.detail}</p>
+                        <div
+                          className="card-body pt-1"
+                          style={{ whiteSpace: "pre-wrap" }}
+                        >
+                          <p
+                            className={
+                              this.isArabic(item.detail) ? "mb-0 rtl" : "mb-0"
+                            }
+                          >
+                            {item.detail}
+                          </p>
                         </div>
                       </Card>
                     </Colxx>
@@ -506,7 +562,21 @@ class PostBank extends Component {
                 <div className="loading" />
               )}
             </Row>
-          {isCopied?<div className={"btn btn-warning py-1 px-1 fixed-bottom rounded-pill fadeIn"} style={{left:"45%", bottom:"60px", width:"150px", cursor:"default"}}>Copied to clipboard</div>:null}
+            {isCopied ? (
+              <div
+                className={
+                  "btn btn-warning py-1 px-1 fixed-bottom rounded-pill fadeIn"
+                }
+                style={{
+                  left: "45%",
+                  bottom: "60px",
+                  width: "150px",
+                  cursor: "default",
+                }}
+              >
+                Copied to clipboard
+              </div>
+            ) : null}
           </Colxx>
         </Row>
       </Fragment>
@@ -514,4 +584,4 @@ class PostBank extends Component {
   }
 }
 
-export default PostBank;
+export default EventBooking;
