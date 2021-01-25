@@ -34,6 +34,7 @@ import {
   CardHeader,
   UncontrolledCollapse,
 } from "reactstrap";
+import ReactAutosuggest from "Components/ReactAutosuggest";
 
 import Select from "react-select";
 import CustomSelectInput from "Components/CustomSelectInput";
@@ -44,27 +45,41 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase";
 import { db } from "../../firebase";
 
-const docRef = db.collection("app").doc("eventBooking");
+const docRef = db.collection("app").doc("riders");
 let timer;
 class EventBooking extends Component {
   state = {
+    //Main Data Lists
     ridersData: null,
+    eventsList: [],
+    //................
+
     dropdownSplitOpen: false,
     lastChecked: null,
     displayOptionsIsOpen: false,
-    errorMessage: null,
-    isCopied: false,
-    isOpen: false,
-    isOpenList: {},
-    //Modal
     modalOpen: false,
-    title: "",
-    label: {},
-    category: {},
-    status: "ACTIVE",
+
+    //Modal Default Data
+    isKnowsAboutUs: false,
+    age: undefined,
+    discount: 0,
+    email: undefined,
+    event: [{}],
+    medicalHistory: undefined,
+    name: undefined,
+    notes: undefined,
+    paymentMethod: undefined,
+    phone: undefined,
+    riderTag: undefined,
+    ridingEx: undefined,
+    ridingExNotes: undefined,
+    whatsapp: undefined,
+    whereKnowUs: undefined,
+    //.........................
   };
   componentDidMount() {
-    this.setPostsList();
+    this.setRidersList();
+    this.setEventsList();
   }
 
   componentWillUnmount() {
@@ -73,7 +88,7 @@ class EventBooking extends Component {
     }
   }
 
-  setPostsList = () => {
+  setRidersList = () => {
     this._asyncRequest = docRef
       .get()
       .then((doc) => {
@@ -83,8 +98,30 @@ class EventBooking extends Component {
         this.setState({ ridersData: doc.data().riders });
       })
       .catch((err) => {
-        this.setState({ eventsData: [] });
+        this.setState({ ridersData: [] });
       });
+  };
+
+  setEventsList = () => {
+    const eventsDoc = db.collection("app").doc("events");
+
+    this._asyncRequest = eventsDoc
+      .get()
+      .then((doc) => {
+        if (!doc.data().events) return;
+        this._asyncRequest = null;
+
+        this.setState({ eventsList: doc.data().events });
+      })
+      .catch((err) => {
+        this.setState({ eventsList: [] });
+      });
+  };
+
+  onSuggestionChange = (event, { newValue }) => {
+    this.setState({
+      suggestionValue: newValue,
+    });
   };
 
   toggleDisplayOptions() {
@@ -120,10 +157,21 @@ class EventBooking extends Component {
   }
   cleanModelState() {
     this.setState({
-      title: "",
-      category: {},
-      detail: "",
-      label: {},
+      isKnowsAboutUs: false,
+      age: undefined,
+      discount: 0,
+      email: undefined,
+      event: [{}],
+      medicalHistory: undefined,
+      name: undefined,
+      notes: undefined,
+      paymentMethod: undefined,
+      phone: undefined,
+      riderTag: undefined,
+      ridingEx: undefined,
+      ridingExNotes: undefined,
+      whatsapp: undefined,
+      whereKnowUs: undefined,
     });
   }
   labelColorSwitch(label) {
@@ -142,8 +190,45 @@ class EventBooking extends Component {
     }
   }
   addPost() {
-    const { title, category, detail, label, ridersData } = this.state;
+    // const { title, category, detail, label, ridersData } = this.state;
+    const {
+      name,
+      event,
+      phone,
+      whatsapp,
+      discount,
+      email,
+      age,
+      medicalHistory,
+      ridingEx,
+      ridingExNotes,
+      whereKnowUs,
+      paymentMethod,
+      riderTag,
+      notes,
+      isKnowsAboutUs,
+    } = this.state;
+    //Obligator: name, event, phone, whatsapp, discount
 
+    const item = {
+      name: name,
+      event: [event.value],
+      phone: phone,
+      whatsapp: whatsapp,
+      discount: discount,
+      email: email,
+      age: age,
+      medicalHistory: medicalHistory,
+      ridingEx: ridingEx.value,
+      ridingExNotes: ridingExNotes,
+      whereKnowUs: whereKnowUs.value,
+      paymentMethod: paymentMethod.value,
+      riderTag: riderTag,
+      notes: notes,
+      isKnowsAboutUs: isKnowsAboutUs,
+      creationDate: new Date(),
+      createdBy: localStorage.getItem("user_id"),
+    };
     // if (
     //   Object.keys(category).length === 0 ||
     //   !detail.length ||
@@ -169,19 +254,19 @@ class EventBooking extends Component {
     //   category: category.value,
     //   labelColor: labelColor,
     // };
-    console.log(this.state);
-    // docRef
-    //   .update({
-    //     riders: firebase.firestore.FieldValue.arrayUnion(item),
-    //   })
-    //   .then(() => {
-    //     this.setPostsList();
-    //     this.cleanModelState();
-    //     this.toggleModal();
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
+    console.log("RIDER's DATA", item);
+    docRef
+      .update({
+        riders: firebase.firestore.FieldValue.arrayUnion(item),
+      })
+      .then(() => {
+        this.setRidersList();
+        this.cleanModelState();
+        this.toggleModal();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   deletePost(id) {
@@ -191,7 +276,7 @@ class EventBooking extends Component {
         posts: firebase.firestore.FieldValue.arrayRemove(item),
       })
       .then(() => {
-        this.setPostsList();
+        this.setRidersList();
       })
       .catch((e) => {
         console.log(e);
@@ -253,8 +338,8 @@ class EventBooking extends Component {
     });
   }
 
-  handleChangeMulti = (selectedOptions) => {
-    this.setState({ selectedOptions });
+  handleChangeMulti = (riderTag) => {
+    this.setState({ riderTag });
   };
   render() {
     const {
@@ -265,6 +350,7 @@ class EventBooking extends Component {
       isError,
       isOpen,
       isOpenList,
+      eventsList,
     } = this.state;
 
     const ridingEx = [
@@ -272,6 +358,7 @@ class EventBooking extends Component {
       { label: "Normal", value: "Normal" },
       { label: "Hard", value: "Hard" },
     ];
+
     const paymentMethod = [
       { label: "Vodafone Cash", value: "Vodafone Cash" },
       { label: "Etisalat Cash", value: "Etisalat Cash" },
@@ -330,6 +417,22 @@ class EventBooking extends Component {
                       defaultValue={this.state.name}
                       onChange={(event) => {
                         this.setState({ name: event.target.value });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Event *" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={eventsList.map((x, i) => {
+                        return { label: x.label, value: x.value, key: i };
+                      })}
+                      value={this.state.event}
+                      onChange={(val) => {
+                        this.setState({ event: val, isError: false });
                       }}
                     />
                     <Label className="mt-4">
@@ -456,7 +559,7 @@ class EventBooking extends Component {
                     />
 
                     <Label className="mt-4">
-                      <IntlMessages id="Payment MethodpaymentMethod" />
+                      <IntlMessages id="Payment Method" />
                     </Label>
                     <Select
                       components={{ Input: CustomSelectInput }}
@@ -476,7 +579,7 @@ class EventBooking extends Component {
                         this.setState({ paymentMethod: val, isError: false });
                       }}
                     />
-                     <Label className="mt-4">
+                    <Label className="mt-4">
                       <IntlMessages id="Tag" />
                     </Label>
                     <Select
@@ -485,7 +588,7 @@ class EventBooking extends Component {
                       classNamePrefix="react-select"
                       isMulti
                       name="form-field-name"
-                      value={this.state.selectedOptions}
+                      value={this.state.riderTag}
                       onChange={(e) => this.handleChangeMulti(e)}
                       options={SELECT_DATA}
                     />
@@ -504,7 +607,7 @@ class EventBooking extends Component {
                     />
                     <CustomInput
                       checked={this.state.isKnowsAboutUs}
-                      onChange={(e)=>{
+                      onChange={(e) => {
                         this.setState({
                           isKnowsAboutUs: e.target.checked,
                           isError: false,
@@ -584,115 +687,129 @@ class EventBooking extends Component {
             <Separator className="mb-5" />
 
             <Row>
-              {[
-                {
-                  title: "Moaz M.",
-                  detail: "A7la mesa 3l nas el kwysa",
-                  id: 0,
-                  createDate: "today",
-                  label: "Dahab",
-                  labelColor: "danger",
-                  category: "Paid",
-                },
-                {
-                  title: "Sohayb M.",
-                  detail: "A7la mesa 3l nas el kwysa",
-                  id: 1,
-                  createDate: "Yesterday",
-                  label: "Giza",
-                  labelColor: "warning",
-                  category: "Paid",
-                },
-                {
-                  title: "A. Gohary",
-                  detail: "A7la mesa 3l nas el kwysa",
-                  id: 2,
-                  createDate: "2 hours ago",
-                  label: "Fayyoum",
-                  labelColor: "success",
-                  category: "Paid",
-                },
-              ].map((item, index) => {
-                return (
-                  <Fragment key={0}>
-                    <Colxx xxs="12" key={index}>
-                      <Card className="card d-flex mb-1">
-                        <div className="d-flex flex-grow-1 min-width-zero">
-                          <CardBody className="py-3 align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
-                            <NavLink
-                              to="#"
-                              id={`toggler${item.id}`}
-                              className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
-                              style={{ cursor: "default" }}
-                              // onClick={() => this.toggleAccordion(item.id)}
-                            >
-                              <span
-                                className={
-                                  this.isArabic(item.detail)
-                                    ? "align-middle d-inline-block rtl"
-                                    : "align-middle d-inline-block"
-                                }
+              {ridersData ? (
+                ridersData.map((item, index) => {
+                  return (
+                    <Fragment key={0}>
+                      <Colxx xxs="12" key={index}>
+                        <Card className="card d-flex mb-1">
+                          <div className="d-flex flex-grow-1 min-width-zero">
+                            <CardBody className="py-3 align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
+                              <NavLink
+                                to="#"
+                                id={`toggler${item.id}`}
+                                className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
+                                style={{ cursor: "default" }}
+                                // onClick={() => this.toggleAccordion(item.id)}
                               >
-                                {item.title}
-                              </span>
-                            </NavLink>
-                            <p className="mb-1 text-muted text-small w-15 w-xs-100">
-                              {item.category}
-                            </p>
-                            <p className="mb-1 text-muted text-small w-15 w-xs-100">
-                              {item.createDate}
-                            </p>
-                            <div className="w-15 w-xs-100">
-                              <Badge color={item.labelColor} pill>
-                                {item.label}
-                              </Badge>
+                                <span
+                                  className={
+                                    this.isArabic(item.detail)
+                                      ? "align-middle d-inline-block rtl"
+                                      : "align-middle d-inline-block"
+                                  }
+                                >
+                                  {item.name}
+                                </span>
+                              </NavLink>
+                              <p className="mb-1 text-muted text-small w-15 w-xs-100">
+                                {item.ridingEx}
+                              </p>
+                              <p className="mb-1 text-muted text-small w-15 w-xs-100">
+                                {this.formatDate(item.creationDate.toDate())}
+                              </p>
+                              <div className="w-15 w-xs-100">
+                                <Badge color={item.labelColor} pill>
+                                  {item.label}
+                                </Badge>
+                              </div>
+                            </CardBody>
+                            <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                              <i
+                                onClick={() => {
+                                  this.deletePost(item.id);
+                                }}
+                                className={`${"simple-icon-trash heading-icon mr-3"}`}
+                                onMouseOver={(e) =>
+                                  (e.target.style.color = "white")
+                                }
+                                onMouseOut={(e) =>
+                                  (e.target.style.color = "#D86161")
+                                }
+                                onMouseDown={(e) =>
+                                  (e.target.style.color = "green")
+                                }
+                                onMouseUp={(e) =>
+                                  (e.target.style.color = "white")
+                                }
+                                style={{
+                                  color: "#D86161",
+                                  cursor: "pointer",
+                                }}
+                              />
                             </div>
-                          </CardBody>
-                          <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
-                            <i
-                              onClick={() => {
-                                this.deletePost(item.id);
-                              }}
-                              className={`${"simple-icon-trash heading-icon mr-3"}`}
-                              onMouseOver={(e) =>
-                                (e.target.style.color = "white")
-                              }
-                              onMouseOut={(e) =>
-                                (e.target.style.color = "#D86161")
-                              }
-                              onMouseDown={(e) =>
-                                (e.target.style.color = "green")
-                              }
-                              onMouseUp={(e) =>
-                                (e.target.style.color = "white")
-                              }
-                              style={{
-                                color: "#D86161",
-                                cursor: "pointer",
-                              }}
-                            />
                           </div>
-                        </div>
-                      </Card>
-                    </Colxx>
-
-                    {/* 2nd Card */}
-                    <Colxx xxs="12">
-                      <UncontrolledCollapse toggler={"#toggler" + item.id}>
-                        <Card className="mb-3">
-                          <CardBody>
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Nesciunt magni, voluptas debitis similique
-                            porro a molestias consequuntur earum odio officiis
-                            natus, amet hic, iste sed dignissimos esse fuga!
-                            Minus, alias.
-                          </CardBody>
                         </Card>
-                      </UncontrolledCollapse>
-                    </Colxx>
-                  </Fragment>
-                );
-              })}
+                      </Colxx>
+
+                      {/* 2nd Card */}
+                      <Colxx xxs="12">
+                        <UncontrolledCollapse toggler={"#toggler" + item.id}>
+                          <Card className="mb-3">
+                            <CardBody>
+                              <Row>
+                                <Colxx xxs="6">
+                                  <p>Notes: {item.notes}</p>
+                                  <p>Knows us from: {item.whereKnowUs}</p>
+                                  <p>Medical History: {item.medicalHistory}</p>
+                                  <p>Riding Experience: {item.ridingEx}</p>
+                                  <p>
+                                    Tags:{" "}
+                                    {item.riderTag.map((e) => {
+                                      return (
+                                        <Badge
+                                          className="mx-1"
+                                          color={"danger"}
+                                          pill
+                                        >
+                                          {e.value}
+                                        </Badge>
+                                      );
+                                    })}
+                                  </p>
+                                 
+                                </Colxx>
+                                <Colxx xxs="6">
+                                  <p>Age: {item.age}</p>
+                                  <p>Phone: {item.phone}</p>
+                                  <p>Whatsapp: {item.whatsapp}</p>
+                                  <p>email: {item.email}</p>
+                                  <p>
+                                    Events:{" "}
+                                    {item.event.map((e) => {
+                                      return (
+                                        <Badge
+                                          className="mx-1"
+                                          color={"success"}
+                                          pill
+                                        >
+                                          {e}
+                                        </Badge>
+                                      );
+                                    })}
+                                  </p>
+                                </Colxx>
+                              </Row>
+                            </CardBody>
+                          </Card>
+                        </UncontrolledCollapse>
+                      </Colxx>
+                    </Fragment>
+                  );
+                })
+              ) : (
+                <div className="loading" />
+              )}
             </Row>
           </Colxx>
         </Row>

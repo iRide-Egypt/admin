@@ -63,27 +63,25 @@ import "rc-slider/assets/index.css";
 import "react-rater/lib/react-rater.css";
 import "react-fine-uploader/gallery/gallery.css";
 
-const docRef = db.collection("app").doc("eventCreator");
+const docRef = db.collection("app").doc("events");
 let timer;
 class EventCreator extends Component {
   state = {
-    eventsData: null,
     dropdownSplitOpen: false,
     lastChecked: null,
     displayOptionsIsOpen: false,
     errorMessage: null,
-    isCopied: false,
-    isOpen: false,
-    isOpenList: {},
-    //Modal
-    modalOpen: false,
-    title: "",
-    label: {},
-    category: {},
-    status: "ACTIVE",
 
+    modalOpen: false,
+    //Main Data
+    eventsData: null,
+    //Modal Data
+    type: "",
+    eventTag: [],
+    program: "",
+    notes: "",
     //Date
-    startDate: null,
+    eventDate: null,
   };
   componentDidMount() {
     this.setPostsList();
@@ -101,8 +99,10 @@ class EventCreator extends Component {
       .then((doc) => {
         if (!doc.data().events) return;
         this._asyncRequest = null;
-
-        this.setState({ eventsData: doc.data().events });
+        console.log(doc.data().events)
+        // console.log("DATE GENER 2", this.isDateBeforeToday(doc.data().events[0].eventDate.toDate()))
+        // console.log("DATE GENER 3", this.isDateBeforeToday(doc.data().events[1].eventDate.toDate()))
+        this.setState({ eventsData: doc.data().events.reverse() });
       })
       .catch((err) => {
         this.setState({ eventsData: [] });
@@ -128,6 +128,7 @@ class EventCreator extends Component {
     }));
   }
   formatDate(date) {
+    
     const ye = new Intl.DateTimeFormat("en", { year: "numeric" }).format(date);
     const mo = new Intl.DateTimeFormat("en", { month: "short" }).format(date);
     const da = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
@@ -142,10 +143,11 @@ class EventCreator extends Component {
   }
   cleanModelState() {
     this.setState({
-      title: "",
-      category: {},
-      detail: "",
-      label: {},
+      type: "",
+      eventTag: [],
+      program: "",
+      notes: "",
+      eventDate: null,
     });
   }
   labelColorSwitch(label) {
@@ -164,54 +166,79 @@ class EventCreator extends Component {
     }
   }
   addPost() {
-    const { title, category, detail, label, eventsData } = this.state;
+    const {
+      eventsData,
+      type,
+      eventTag,
+      program,
+      notes,
+      eventDate,
+    } = this.state;
+    const NUMBER_OF_PAST_EVENTS = 222;
+    const id = eventsData.length ? eventsData[0].id + 1 : 0;
+    const label = type.value + " " + (id + NUMBER_OF_PAST_EVENTS + 1);
+    const user = localStorage.getItem("user_id")
+    // const status = this.eventStatusGenerator(date);
 
+    const item = {
+      eventDate: firebase.firestore.Timestamp.fromDate(new Date(eventDate)),
+      type: type.value,
+      program: program.value,
+      eventTag: eventTag,
+      notes: notes,
+      id: id,
+      label: label,
+      value: label,
+      creationDate: new Date(),
+      createdBy: user
+    };
     // if (
     //   Object.keys(category).length === 0 ||
-    //   !detail.length ||
+    //   !notes.length ||
     //   Object.keys(label).length === 0
     // ) {
     //   this.setState({ isError: true });
     //   return;
     // }
 
-    // const id = eventsData.length ? eventsData[0].id + 1 : 0,
-    //   date = this.formatDate(new Date()),
-    //   labelColor = this.labelColorSwitch(label.value),
-    //   autoTitle = title.length
-    //     ? title
-    //     : detail.split(" ").slice(0, 5).join(" ") + "...";
 
-    // const item = {
-    //   createDate: date,
-    //   id: id,
-    //   title: autoTitle,
-    //   detail: detail,
-    //   label: label.value,
-    //   category: category.value,
-    //   labelColor: labelColor,
-    // };
-    console.log(this.state)
 
-    // docRef
-    //   .update({
-    //     riders: firebase.firestore.FieldValue.arrayUnion(item),
-    //   })
-    //   .then(() => {
-    //     this.setPostsList();
-    //     this.cleanModelState();
-    //     this.toggleModal();
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
+    console.log("Modal data: ", item);
+
+    docRef
+      .update({
+        events: firebase.firestore.FieldValue.arrayUnion(item),
+      })
+      .then(() => {
+        this.setPostsList();
+        this.cleanModelState();
+        this.toggleModal();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
-
+  eventStatusGenerator(date){
+    switch (date) {
+      case new Date().after(date):
+        
+        return {status:"DONE", labelColor:"success"};
+      case new Date().before(date):
+        
+        return {status:"In Progress", labelColor:"warning"};
+    
+      default:
+        return {status:"Unknown", labelColor:"light"};
+    }
+  }
+   isDateBeforeToday(date) {
+    return new Date(date.toDateString()) < new Date(new Date().toDateString())?{labelColor: "success", status:"DONE"} : {labelColor: "warning", status:"In Progress"};
+}
   deletePost(id) {
     const item = this.state.eventsData.filter((e) => e.id === id)[0];
     docRef
       .update({
-        posts: firebase.firestore.FieldValue.arrayRemove(item),
+        events: firebase.firestore.FieldValue.arrayRemove(item),
       })
       .then(() => {
         this.setPostsList();
@@ -288,8 +315,8 @@ class EventCreator extends Component {
   //     this.setState({ tags });
   //   }
 
-  handleChangeMulti = (selectedOptions) => {
-    this.setState({ selectedOptions });
+  handleChangeMulti = (eventTag) => {
+    this.setState({ eventTag });
   };
 
   //   handleChange = (selectedOption) => {
@@ -299,7 +326,7 @@ class EventCreator extends Component {
   handleChangeDate(date) {
     console.log(this.formatDate(date));
     this.setState({
-      startDate: date,
+      eventDate: date,
     });
   }
 
@@ -362,7 +389,7 @@ class EventCreator extends Component {
                   isOpen={this.state.modalOpen}
                   toggle={() => this.toggleModal()}
                   wrapClassName="modal-right"
-                //   backdrop="static"
+                  //   backdrop="static"
                 >
                   <ModalHeader toggle={() => this.toggleModal()}>
                     <IntlMessages id="Add New Event" />
@@ -372,7 +399,7 @@ class EventCreator extends Component {
                       <IntlMessages id="Date *" />
                     </Label>
                     <DatePicker
-                      selected={this.state.startDate}
+                      selected={this.state.eventDate}
                       onChange={(e) => this.handleChangeDate(e)}
                       placeholderText={"Pick A Date"}
                       dateFormat="DD/MM/YYYY"
@@ -450,7 +477,7 @@ class EventCreator extends Component {
                       classNamePrefix="react-select"
                       isMulti
                       name="form-field-name"
-                      value={this.state.selectedOptions}
+                      value={this.state.eventTag}
                       onChange={(e) => this.handleChangeMulti(e)}
                       options={SELECT_DATA}
                     />
@@ -471,10 +498,10 @@ class EventCreator extends Component {
                     </Label>
                     <Input
                       type="textarea"
-                      defaultValue={this.state.detail}
+                      defaultValue={this.state.notes}
                       onChange={(event) => {
                         this.setState({
-                          detail: event.target.value,
+                          notes: event.target.value,
                           isError: false,
                         });
                       }}
@@ -549,44 +576,7 @@ class EventCreator extends Component {
             <Separator className="mb-5" />
 
             <Row>
-              {[
-                {
-                  title: "Dahab",
-                  detail: "A7la mesa 3l nas el kwysa",
-                  id: 0,
-                  createDate: "13/2/2021",
-                  label: "Cancelled",
-                  labelColor: "danger",
-                  category: "5/25",
-                },
-                {
-                  title: "Giza",
-                  detail: "A7la mesa 3l nas el kwysa",
-                  id: 1,
-                  createDate: "20/2/2021",
-                  label: "In Progress",
-                  labelColor: "warning",
-                  category: "27/25",
-                },
-                {
-                  title: "Fayyoum",
-                  detail: "A7la mesa 3l nas el kwysa",
-                  id: 2,
-                  createDate: "2/1/2021",
-                  label: "Finished",
-                  labelColor: "success",
-                  category: "15/25",
-                },
-                {
-                  title: "Saqqara",
-                  detail: "A7la mesa 3l nas el kwysa",
-                  id: 3,
-                  createDate: "30/2/2021",
-                  label: "Draft",
-                  labelColor: "light",
-                  category: "19/25",
-                },
-              ].map((item, index) => {
+              {eventsData?eventsData.map((item, index) => {
                 return (
                   <Fragment key={0}>
                     <Colxx xxs="12" key={index}>
@@ -602,23 +592,24 @@ class EventCreator extends Component {
                             >
                               <span
                                 className={
-                                  this.isArabic(item.detail)
+                                  this.isArabic(item.notes)
                                     ? "align-middle d-inline-block rtl"
                                     : "align-middle d-inline-block"
                                 }
                               >
-                                {item.title}
+                                {item.label}
                               </span>
                             </NavLink>
                             <p className="mb-1 text-muted text-small w-15 w-xs-100">
-                              {item.category}
+                              {item.type.label}
                             </p>
                             <p className="mb-1 text-muted text-small w-15 w-xs-100">
-                              {item.createDate}
+                              {this.formatDate(item.eventDate.toDate())}
+                            
                             </p>
                             <div className="w-15 w-xs-100">
-                              <Badge color={item.labelColor} pill>
-                                {item.label}
+                              <Badge color={this.isDateBeforeToday(item.eventDate.toDate()).labelColor} pill>
+                                {this.isDateBeforeToday(item.eventDate.toDate()).status}
                               </Badge>
                             </div>
                           </CardBody>
@@ -655,18 +646,14 @@ class EventCreator extends Component {
                       <UncontrolledCollapse toggler={"#toggler" + item.id}>
                         <Card className="mb-3">
                           <CardBody>
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Nesciunt magni, voluptas debitis similique
-                            porro a molestias consequuntur earum odio officiis
-                            natus, amet hic, iste sed dignissimos esse fuga!
-                            Minus, alias.
+                          {item.notes}
                           </CardBody>
                         </Card>
                       </UncontrolledCollapse>
                     </Colxx>
                   </Fragment>
                 );
-              })}
+              }):<div className="loading" />}
             </Row>
           </Colxx>
         </Row>
