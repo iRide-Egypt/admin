@@ -55,13 +55,14 @@ import Rating from "Components/Rating";
 import { SliderTooltip, RangeTooltip } from "Components/SliderTooltip";
 import FineUploaderTraditional from "fine-uploader-wrappers";
 import Gallery from "react-fine-uploader";
-
+import ConfirmationModal from "Components/ConfirmationModal";
 import "react-tagsinput/react-tagsinput.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "rc-switch/assets/index.css";
 import "rc-slider/assets/index.css";
 import "react-rater/lib/react-rater.css";
 import "react-fine-uploader/gallery/gallery.css";
+import { NotificationManager } from "Components/ReactNotifications";
 
 const docRef = db.collection("app").doc("events");
 let timer;
@@ -176,14 +177,14 @@ class EventCreator extends Component {
     } = this.state;
     const NUMBER_OF_PAST_EVENTS = 222;
     const id = eventsData.length ? eventsData[0].id + 1 : 0;
-    const label = type.value + " " + (id + NUMBER_OF_PAST_EVENTS + 1);
+    const label = type.value||"Anonymous" + " " + (id + NUMBER_OF_PAST_EVENTS + 1);
     const user = localStorage.getItem("user_id")
     // const status = this.eventStatusGenerator(date);
 
     const item = {
-      eventDate: firebase.firestore.Timestamp.fromDate(new Date(eventDate)),
-      type: type.value,
-      program: program.value,
+      eventDate: firebase.firestore.Timestamp.fromDate(new Date(eventDate)) || new Date(),
+      type: type.value||"",
+      program: program.value||"",
       eventTag: eventTag,
       notes: notes,
       id: id,
@@ -211,13 +212,29 @@ class EventCreator extends Component {
       })
       .then(() => {
         this.setPostsList();
+        this.notification("You have successfully created a new event!")
         this.cleanModelState();
         this.toggleModal();
+        
+        
+
       })
       .catch((err) => {
         console.log(err);
       });
   }
+
+  notification(message="Something Happened!", title="", style="filled"){
+    NotificationManager.success(
+      message,
+      title,
+      3000,
+      null,
+      null,
+      style
+    );
+  }
+
   eventStatusGenerator(date){
     switch (date) {
       case new Date().after(date):
@@ -614,10 +631,9 @@ class EventCreator extends Component {
                             </div>
                           </CardBody>
                           <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                            <ConfirmationModal button={  
                             <i
-                              onClick={() => {
-                                this.deletePost(item.id);
-                              }}
+                           
                               className={`${"simple-icon-trash heading-icon mr-3"}`}
                               onMouseOver={(e) =>
                                 (e.target.style.color = "white")
@@ -635,7 +651,8 @@ class EventCreator extends Component {
                                 color: "#D86161",
                                 cursor: "pointer",
                               }}
-                            />
+                            />} action={()=>this.deletePost(item.id)}/>
+                          
                           </div>
                         </div>
                       </Card>
