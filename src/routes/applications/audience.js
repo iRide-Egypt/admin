@@ -48,7 +48,7 @@ import { NotificationManager } from "Components/ReactNotifications";
 
 const docRef = db.collection("app").doc("riders");
 let timer;
-class EventBooking extends Component {
+class Audience extends Component {
   state = {
     //Main Data Lists
     ridersData: null,
@@ -98,7 +98,7 @@ class EventBooking extends Component {
         if (!doc.data().riders) return;
         this._asyncRequest = null;
 
-        this.setState({ ridersData: doc.data().riders });
+        this.setState({ ridersData: doc.data().riders.reverse() });
       })
       .catch((err) => {
         this.setState({ ridersData: [] });
@@ -905,4 +905,4 @@ class EventBooking extends Component {
   }
 }
 
-export default EventBooking;
+export default Audience;

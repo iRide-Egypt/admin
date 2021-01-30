@@ -468,7 +468,19 @@ class Sidebar extends Component {
                   </NavLink>
                 </NavItem>
                 <NavItem>
-                  <NavLink to="/app/applications/eventBooking">
+                  <NavLink to="/app/applications/programManager">
+                    <i className="simple-icon-puzzle" />{" "}
+                    <IntlMessages id="menu.programManager" />
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink to="/app/applications/constantManager">
+                    <i className="simple-icon-puzzle" />{" "}
+                    <IntlMessages id="menu.constantManager" />
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink to="/app/applications/audience">
                     <i className="simple-icon-puzzle" />{" "}
                     <IntlMessages id="menu.eventbooking" />
                   </NavLink>
