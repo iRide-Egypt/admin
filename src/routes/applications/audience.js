@@ -236,35 +236,13 @@ class Audience extends Component {
       riderTag: riderTag || [{label:"", value:"", key:""}],
       notes: notes,
       isKnowsAboutUs: isKnowsAboutUs,
+      isCar:isCar,
+      isBreakfast:isBreakfast,
       id: id,
       creationDate: new Date(),
       createdBy: localStorage.getItem("user_id"),
     };
-    // if (
-    //   Object.keys(category).length === 0 ||
-    //   !detail.length ||
-    //   Object.keys(label).length === 0
-    // ) {
-    //   this.setState({ isError: true });
-    //   return;
-    // }
 
-    // const id = ridersData.length ? ridersData[0].id + 1 : 0,
-    //   date = this.formatDate(new Date()),
-    //   labelColor = this.labelColorSwitch(label.value),
-    //   autoTitle = title.length
-    //     ? title
-    //     : detail.split(" ").slice(0, 5).join(" ") + "...";
-
-    // const item = {
-    //   createDate: date,
-    //   id: id,
-    //   title: autoTitle,
-    //   detail: detail,
-    //   label: label.value,
-    //   category: category.value,
-    //   labelColor: labelColor,
-    // };
     console.log("RIDER's DATA", item);
     docRef
       .update({
