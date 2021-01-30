@@ -44,7 +44,7 @@ import { NavLink } from "react-router-dom";
 
 import firebase from "firebase";
 import { db } from "../../firebase";
-
+import emailjs from 'emailjs-com';
 //Date picker
 
 import moment from "moment";
@@ -100,7 +100,7 @@ class ProgramManager extends Component {
       .then((doc) => {
         if (!doc.data().programs) return;
         this._asyncRequest = null;
-        console.log(doc.data().programs)
+        console.log(doc.data().programs);
         // console.log("DATE GENER 2", this.isDateBeforeToday(doc.data().programs[0].eventDate.toDate()))
         // console.log("DATE GENER 3", this.isDateBeforeToday(doc.data().programs[1].eventDate.toDate()))
         this.setState({ eventsData: doc.data().programs.reverse() });
@@ -129,7 +129,6 @@ class ProgramManager extends Component {
     }));
   }
   formatDate(date) {
-    
     const ye = new Intl.DateTimeFormat("en", { year: "numeric" }).format(date);
     const mo = new Intl.DateTimeFormat("en", { month: "short" }).format(date);
     const da = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
@@ -177,21 +176,24 @@ class ProgramManager extends Component {
     } = this.state;
     const NUMBER_OF_PAST_EVENTS = 222;
     const id = eventsData.length ? eventsData[0].id + 1 : 0;
-    const label = type.value||"Anonymous" + " " + (id + NUMBER_OF_PAST_EVENTS + 1);
-    const user = localStorage.getItem("user_id")
+    const label =
+      type.value || "Anonymous" + " " + (id + NUMBER_OF_PAST_EVENTS + 1);
+    const user = localStorage.getItem("user_id");
     // const status = this.eventStatusGenerator(date);
 
     const item = {
-      eventDate: firebase.firestore.Timestamp.fromDate(new Date(eventDate)) || new Date(),
-      type: type.value||"",
-      program: program.value||"",
+      eventDate:
+        firebase.firestore.Timestamp.fromDate(new Date(eventDate)) ||
+        new Date(),
+      type: type.value || "",
+      program: program.value || "",
       eventTag: eventTag,
       notes: notes,
       id: id,
       label: label,
       value: label,
       creationDate: new Date(),
-      createdBy: user
+      createdBy: user,
     };
     // if (
     //   Object.keys(category).length === 0 ||
@@ -202,8 +204,6 @@ class ProgramManager extends Component {
     //   return;
     // }
 
-
-
     console.log("Modal data: ", item);
 
     docRef
@@ -212,45 +212,35 @@ class ProgramManager extends Component {
       })
       .then(() => {
         this.setPostsList();
-        this.notification("You have successfully created a new event!")
+        this.notification("You have successfully created a new event!");
         this.cleanModelState();
         this.toggleModal();
-        
-        
-
       })
       .catch((err) => {
         console.log(err);
       });
   }
 
-  notification(message="Something Happened!", title="", style="filled"){
-    NotificationManager.success(
-      message,
-      title,
-      3000,
-      null,
-      null,
-      style
-    );
+  notification(message = "Something Happened!", title = "", style = "filled") {
+    NotificationManager.success(message, title, 3000, null, null, style);
   }
 
-  eventStatusGenerator(date){
+  eventStatusGenerator(date) {
     switch (date) {
       case new Date().after(date):
-        
-        return {status:"DONE", labelColor:"success"};
+        return { status: "DONE", labelColor: "success" };
       case new Date().before(date):
-        
-        return {status:"In Progress", labelColor:"warning"};
-    
+        return { status: "In Progress", labelColor: "warning" };
+
       default:
-        return {status:"Unknown", labelColor:"light"};
+        return { status: "Unknown", labelColor: "light" };
     }
   }
-   isDateBeforeToday(date) {
-    return new Date(date.toDateString()) < new Date(new Date().toDateString())?{labelColor: "success", status:"DONE"} : {labelColor: "warning", status:"In Progress"};
-}
+  isDateBeforeToday(date) {
+    return new Date(date.toDateString()) < new Date(new Date().toDateString())
+      ? { labelColor: "success", status: "DONE" }
+      : { labelColor: "warning", status: "In Progress" };
+  }
   deletePost(id) {
     const item = this.state.eventsData.filter((e) => e.id === id)[0];
     docRef
@@ -339,7 +329,24 @@ class ProgramManager extends Component {
   //   handleChange = (selectedOption) => {
   //     this.setState({ selectedOption });
   //   };
+  sendEmail() {
+  var templateParams = {
+      to_email:"moaz5an@gmail.com, annastaher@gmail.com",
+      subject_title:"A New TODO for You! ",
+      to_name: 'Anas & Moaz',
+      message:"This is a test email notification by iRide Admin Tool!",
+      sub_message: 'Please send Sohayb a message if this email has reached you!',
+      reply_to: "irideegypt@gmail.com",
+  };
+   
+  emailjs.send('service_1xykic1', 'template_67si6ts', templateParams, "user_rd3zXVJgKBnuC9FDcIXaz")
+      .then(function(response) {
+         console.log('SUCCESS!', response.status, response.text);
+      }, function(error) {
+         console.log('FAILED...', error);
+      });
 
+  }
   handleChangeDate(date) {
     console.log(this.formatDate(date));
     this.setState({
@@ -386,7 +393,9 @@ class ProgramManager extends Component {
     return (
       <Fragment>
         <Row className="app-row survey-app pr-0">
+       
           <Colxx xxs="12">
+          <Button onClick={()=>this.sendEmail()}>Send Email</Button>
             <div className="mb-2">
               <h1>
                 <IntlMessages id="menu.programManager" />
@@ -593,84 +602,98 @@ class ProgramManager extends Component {
             <Separator className="mb-5" />
 
             <Row>
-              {eventsData?eventsData.map((item, index) => {
-                return (
-                  <Fragment key={0}>
-                    <Colxx xxs="12" key={index}>
-                      <Card className="card d-flex mb-1">
-                        <div className="d-flex flex-grow-1 min-width-zero">
-                          <CardBody className="py-3 align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
-                            <NavLink
-                              to="#"
-                              id={`toggler${item.id}`}
-                              className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
-                              style={{ cursor: "default" }}
-                              // onClick={() => this.toggleAccordion(item.id)}
-                            >
-                              <span
-                                className={
-                                  this.isArabic(item.notes)
-                                    ? "align-middle d-inline-block rtl"
-                                    : "align-middle d-inline-block"
-                                }
+              {eventsData ? (
+                eventsData.map((item, index) => {
+                  return (
+                    <Fragment key={0}>
+                      <Colxx xxs="12" key={index}>
+                        <Card className="card d-flex mb-1">
+                          <div className="d-flex flex-grow-1 min-width-zero">
+                            <CardBody className="py-3 align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
+                              <NavLink
+                                to="#"
+                                id={`toggler${item.id}`}
+                                className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
+                                style={{ cursor: "default" }}
+                                // onClick={() => this.toggleAccordion(item.id)}
                               >
-                                {item.label}
-                              </span>
-                            </NavLink>
-                            <p className="mb-1 text-muted text-small w-15 w-xs-100">
-                              {item.type.label}
-                            </p>
-                            <p className="mb-1 text-muted text-small w-15 w-xs-100">
-                              {this.formatDate(item.eventDate.toDate())}
-                            
-                            </p>
-                            <div className="w-15 w-xs-100">
-                              <Badge color={this.isDateBeforeToday(item.eventDate.toDate()).labelColor} pill>
-                                {this.isDateBeforeToday(item.eventDate.toDate()).status}
-                              </Badge>
+                                <span
+                                  className={
+                                    this.isArabic(item.notes)
+                                      ? "align-middle d-inline-block rtl"
+                                      : "align-middle d-inline-block"
+                                  }
+                                >
+                                  {item.label}
+                                </span>
+                              </NavLink>
+                              <p className="mb-1 text-muted text-small w-15 w-xs-100">
+                                {item.type.label}
+                              </p>
+                              <p className="mb-1 text-muted text-small w-15 w-xs-100">
+                                {this.formatDate(item.eventDate.toDate())}
+                              </p>
+                              <div className="w-15 w-xs-100">
+                                <Badge
+                                  color={
+                                    this.isDateBeforeToday(
+                                      item.eventDate.toDate()
+                                    ).labelColor
+                                  }
+                                  pill
+                                >
+                                  {
+                                    this.isDateBeforeToday(
+                                      item.eventDate.toDate()
+                                    ).status
+                                  }
+                                </Badge>
+                              </div>
+                            </CardBody>
+                            <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                              <ConfirmationModal
+                                button={
+                                  <i
+                                    className={`${"simple-icon-trash heading-icon mr-3"}`}
+                                    onMouseOver={(e) =>
+                                      (e.target.style.color = "white")
+                                    }
+                                    onMouseOut={(e) =>
+                                      (e.target.style.color = "#D86161")
+                                    }
+                                    onMouseDown={(e) =>
+                                      (e.target.style.color = "green")
+                                    }
+                                    onMouseUp={(e) =>
+                                      (e.target.style.color = "white")
+                                    }
+                                    style={{
+                                      color: "#D86161",
+                                      cursor: "pointer",
+                                    }}
+                                  />
+                                }
+                                action={() => this.deletePost(item.id)}
+                              />
                             </div>
-                          </CardBody>
-                          <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
-                            <ConfirmationModal button={  
-                            <i
-                           
-                              className={`${"simple-icon-trash heading-icon mr-3"}`}
-                              onMouseOver={(e) =>
-                                (e.target.style.color = "white")
-                              }
-                              onMouseOut={(e) =>
-                                (e.target.style.color = "#D86161")
-                              }
-                              onMouseDown={(e) =>
-                                (e.target.style.color = "green")
-                              }
-                              onMouseUp={(e) =>
-                                (e.target.style.color = "white")
-                              }
-                              style={{
-                                color: "#D86161",
-                                cursor: "pointer",
-                              }}
-                            />} action={()=>this.deletePost(item.id)}/>
-                          
                           </div>
-                        </div>
-                      </Card>
-                    </Colxx>
-
-                    {/* 2nd Card */}
-                    <Colxx xxs="12">
-                      <UncontrolledCollapse toggler={"#toggler" + item.id}>
-                        <Card className="mb-3">
-                          <CardBody>
-                          {item.notes}
-                          </CardBody>
                         </Card>
-                      </UncontrolledCollapse>
-                    </Colxx>
-                  </Fragment>
-                );
-              }):<div className="loading" />}
+                      </Colxx>
+
+                      {/* 2nd Card */}
+                      <Colxx xxs="12">
+                        <UncontrolledCollapse toggler={"#toggler" + item.id}>
+                          <Card className="mb-3">
+                            <CardBody>{item.notes}</CardBody>
+                          </Card>
+                        </UncontrolledCollapse>
+                      </Colxx>
+                    </Fragment>
+                  );
+                })
+              ) : (
+                <div className="loading" />
+              )}
             </Row>
           </Colxx>
         </Row>

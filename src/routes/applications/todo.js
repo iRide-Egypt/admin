@@ -30,9 +30,10 @@ import { BreadcrumbItems } from "Components/BreadcrumbContainer";
 import { NavLink } from "react-router-dom";
 import classnames from "classnames";
 import ApplicationMenu from "Components/ApplicationMenu";
-
+import { NotificationManager } from "Components/ReactNotifications";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { connect } from "react-redux";
+import emailjs from "emailjs-com";
 import {
   getTodoList,
   getTodoListWithFilter,
@@ -41,7 +42,7 @@ import {
   addTodoItem,
   selectedTodoItemsChange,
 } from "Redux/actions";
-
+import ConfirmationModal from "Components/ConfirmationModal";
 import { db } from "../../firebase";
 import firebase from "firebase";
 class TodoApplication extends Component {
@@ -52,15 +53,14 @@ class TodoApplication extends Component {
     this.toggleDisplayOptions = this.toggleDisplayOptions.bind(this);
 
     this.state = {
-   
       dropdownSplitOpen: false,
       modalOpen: false,
       lastChecked: null,
 
       title: "",
       detail: "",
-      label: {label: "Anybody", value: "Anybody", key: 0},
-      category: {label: "General", value: "General", key: 0},
+      label: { label: "Anybody", value: "Anybody", key: 0 },
+      category: { label: "General", value: "General", key: 0 },
       status: "PENDING",
       displayOptionsIsOpen: false,
     };
@@ -89,25 +89,27 @@ class TodoApplication extends Component {
     this.props.getTodoListWithOrder(column);
   }
   addNetItem() {
-    if(this.state.title===""||this.state.title===" "){
-      this.setState({isError:true,errorMessage:"Title is missing!"})
+    if (this.state.title === "" || this.state.title === " ") {
+      this.setState({ isError: true, errorMessage: "Title is missing!" });
       return;
     }
     const newItem = {
       title: this.state.title,
       detail: this.state.detail,
-      label: this.state.label.value||"Anybody",
-      labelColor: this.state.label.color||"light",
-      category: this.state.category.value||"General",
+      label: this.state.label.value || "Anybody",
+      labelColor: this.state.label.color || "light",
+      category: this.state.category.value || "General",
       status: this.state.status,
     };
     this.props.addTodoItem(newItem);
+    this.notification("You have successfully created a new TODO!");
     this.toggleModal();
+    this.sendEmail(this.state.label.value, ("("+this.state.title+"): "+this.state.detail));
     this.setState({
       title: "",
       detail: "",
-      label: {label: "Anybody", value: "Anybody", key: 0},
-      category: {label: "General", value: "General", key: 0},
+      label: { label: "Anybody", value: "Anybody", key: 0 },
+      category: { label: "General", value: "General", key: 0 },
       status: "PENDING",
     });
   }
@@ -157,6 +159,58 @@ class TodoApplication extends Component {
         console.log(e);
       });
   }
+
+  notification(message = "Something Happened!", title = "", style = "filled") {
+    NotificationManager.success(message, title, 3000, null, null, style);
+  }
+  sendEmail(toWho, todoBody) {
+    const id = localStorage.getItem("user_id");
+    const toEmail =
+      toWho === "Annas Taher"
+        ? "annastaher@gmail.com"
+        : toWho === "Gohary"
+        ? "gohary636@gmail.com"
+        : toWho === "Sohayb Hassan"
+        ? "sohaybmohammed@gmail.com"
+        : toWho === "Moaz M."
+        ? "moaz5an@gmail.com"
+        : "irideegypt@gmail.com";
+    const fromName =
+      id === "N6t5EcEbiEPu7RX6SMTINFNRBlf1"
+        ? "Annas Taher"
+        : id === "byN8fQxFkpaJJdi5OzfQhKywqiy2"
+        ? "Moaz M."
+        : id === "yRGROLqSIZUyj2DSujoqfvLCqVV2"
+        ? "Gohary"
+        : id === "NYnE9NoeKiT08U05AmK2ijPpcvV2"
+        ? "Sohayb Hassan"
+        : "Unknown";
+    var templateParams = {
+      to_email: toEmail,
+      subject_title: "A New TODO for You! ",
+      to_name: toWho,
+      message: "A new TODO has been assigned to you by " + fromName,
+      sub_message: todoBody,
+      reply_to: "irideegypt@gmail.com",
+      link:"https://admin.irideegypt.com/#/app/applications/todo"
+    };
+
+    emailjs
+      .send(
+        "service_1xykic1",
+        "template_67si6ts",
+        templateParams,
+        "user_rd3zXVJgKBnuC9FDcIXaz"
+      )
+      .then(
+        function (response) {
+          console.log("SUCCESS!", response.status, response.text);
+        },
+        function (error) {
+          console.log("FAILED...", error);
+        }
+      );
+  }
   changeItemStatus(id) {
     const item = this.props.todoApp.todoItems.filter((e) => e.id === id)[0];
     const docRef = db.collection("app").doc("todo");
@@ -184,7 +238,7 @@ class TodoApplication extends Component {
       this.props.getTodoListSearch(e.target.value);
     }
   }
-  handleOnChangeInput(e){
+  handleOnChangeInput(e) {
     this.props.getTodoListSearch(e.target.value);
   }
   handleCheckChange(event, id) {
@@ -318,7 +372,7 @@ class TodoApplication extends Component {
                       value={this.state.category}
                       onChange={(val) => {
                         this.setState({ category: val });
-                        console.log(val)
+                        console.log(val);
                       }}
                     />
                     <Label className="mt-4">
@@ -377,7 +431,11 @@ class TodoApplication extends Component {
                       }}
                     />
                   </ModalBody>
-                  {this.state.isError&&<p className="text-center text-danger">{this.state.errorMessage}</p>}
+                  {this.state.isError && (
+                    <p className="text-center text-danger">
+                      {this.state.errorMessage}
+                    </p>
+                  )}
                   <ModalFooter>
                     <Button
                       color="secondary"
@@ -543,7 +601,19 @@ class TodoApplication extends Component {
                             </div>
                           </CardBody>
                           <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
-                            <i
+                            <ConfirmationModal
+                              button={
+                                <i
+                                  className={`${"simple-icon-trash heading-icon"}`}
+                                  style={{
+                                    color: "#D86161",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                              }
+                              action={() => this.deleteThisItem(item.id)}
+                            />
+                            {/* <i
                               onClick={() => {
                                 this.deleteThisItem(item.id);
                               }}
@@ -553,7 +623,7 @@ class TodoApplication extends Component {
                                 cursor: "pointer"
                                 
                               }}
-                            />
+                            /> */}
                             {/* <CustomInput
                               className="itemCheck mb-0"
                               type="checkbox"
