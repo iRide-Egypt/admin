@@ -89,6 +89,7 @@ class TodoApplication extends Component {
     this.props.getTodoListWithOrder(column);
   }
   addNetItem() {
+    const { todoItems, allTodoItems } = this.props.todoApp;
     if (this.state.title === "" || this.state.title === " ") {
       this.setState({ isError: true, errorMessage: "Title is missing!" });
       return;
@@ -100,11 +101,18 @@ class TodoApplication extends Component {
       labelColor: this.state.label.color || "light",
       category: this.state.category.value || "General",
       status: this.state.status,
+      id: allTodoItems.length + 1,
     };
     this.props.addTodoItem(newItem);
     this.notification("You have successfully created a new TODO!");
     this.toggleModal();
-    this.sendEmail(this.state.label.value, ("("+this.state.title+"): "+this.state.detail));
+    this.sendEmail(
+      this.state.label.value,
+      "(" + this.state.title + "): " + this.state.detail
+    );
+    this.clearState();
+  }
+  clearState() {
     this.setState({
       title: "",
       detail: "",
@@ -166,7 +174,7 @@ class TodoApplication extends Component {
   sendEmail(toWho, todoBody) {
     const id = localStorage.getItem("user_id");
     const toEmail =
-      toWho === "Annas Taher"
+      toWho === "Anas Taher"
         ? "annastaher@gmail.com"
         : toWho === "Gohary"
         ? "gohary636@gmail.com"
@@ -177,7 +185,7 @@ class TodoApplication extends Component {
         : "irideegypt@gmail.com";
     const fromName =
       id === "N6t5EcEbiEPu7RX6SMTINFNRBlf1"
-        ? "Annas Taher"
+        ? "Anas Taher"
         : id === "byN8fQxFkpaJJdi5OzfQhKywqiy2"
         ? "Moaz M."
         : id === "yRGROLqSIZUyj2DSujoqfvLCqVV2"
@@ -192,7 +200,7 @@ class TodoApplication extends Component {
       message: "A new TODO has been assigned to you by " + fromName,
       sub_message: todoBody,
       reply_to: "irideegypt@gmail.com",
-      link:"https://admin.irideegypt.com/#/app/applications/todo"
+      link: "https://admin.irideegypt.com/#/app/applications/todo",
     };
 
     emailjs
