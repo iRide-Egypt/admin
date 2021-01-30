@@ -45,6 +45,7 @@ import {
 import ConfirmationModal from "Components/ConfirmationModal";
 import { db } from "../../firebase";
 import firebase from "firebase";
+import {getCurrentUser, getUserByName} from "../../util/Utils";
 class TodoApplication extends Component {
   constructor(props) {
     super(props);
@@ -121,36 +122,6 @@ class TodoApplication extends Component {
       status: "PENDING",
     });
   }
-  deleteItem() {
-    let selectedItems = Object.assign([], this.props.todoApp.selectedItems);
-
-    const docRef = db.collection("app").doc("todo");
-    const { todoItems } = this.props.todoApp;
-
-    console.log(selectedItems);
-
-    for (let i = 0; i < todoItems.length; i++) {
-      console.log("loop", todoItems[selectedItems[i]]);
-      // docRef
-      //   .update({
-      //     todos: firebase.firestore.FieldValue.arrayRemove(
-      //       todoItems[selectedItems[i]]
-      //     ),
-      //   })
-      //   .then((e) => {
-      //     console.log("deleted:", selectedItems);
-      //     // this.props.getTodoList();
-      //   })
-      //   .catch((err) => {
-      //     console.log("error deleting items");
-      //   });
-    }
-
-    // fb.usersCollection.doc(docId).update({
-    //   posts: posts.filter(post => post.id !== deleteId);
-    // })
-    console.log("delete button:", selectedItems);
-  }
   deleteThisItem(id) {
     const item = this.props.todoApp.todoItems.filter((e) => e.id === id)[0];
     const docRef = db.collection("app").doc("todo");
@@ -167,37 +138,18 @@ class TodoApplication extends Component {
         console.log(e);
       });
   }
-
   notification(message = "Something Happened!", title = "", style = "filled") {
     NotificationManager.success(message, title, 3000, null, null, style);
   }
-  sendEmail(toWho, todoBody) {
-    const id = localStorage.getItem("user_id");
-    const toEmail =
-      toWho === "Anas Taher"
-        ? "annastaher@gmail.com"
-        : toWho === "Gohary"
-        ? "gohary636@gmail.com"
-        : toWho === "Sohayb Hassan"
-        ? "sohaybmohammed@gmail.com"
-        : toWho === "Moaz M."
-        ? "moaz5an@gmail.com"
-        : "irideegypt@gmail.com";
-    const fromName =
-      id === "N6t5EcEbiEPu7RX6SMTINFNRBlf1"
-        ? "Anas Taher"
-        : id === "byN8fQxFkpaJJdi5OzfQhKywqiy2"
-        ? "Moaz M."
-        : id === "yRGROLqSIZUyj2DSujoqfvLCqVV2"
-        ? "Gohary"
-        : id === "NYnE9NoeKiT08U05AmK2ijPpcvV2"
-        ? "Sohayb Hassan"
-        : "Unknown";
+  sendEmail(userName, todoBody) {
+    const currentUser= getCurrentUser();
+    const user = getUserByName(userName);
+
     var templateParams = {
-      to_email: toEmail,
+      to_email: user.email,
       subject_title: "A New TODO for You! ",
-      to_name: toWho,
-      message: "A new TODO has been assigned to you by " + fromName,
+      to_name: userName,
+      message: "A new TODO has been assigned to you by " + currentUser.name,
       sub_message: todoBody,
       reply_to: "irideegypt@gmail.com",
       link: "https://admin.irideegypt.com/#/app/applications/todo",
