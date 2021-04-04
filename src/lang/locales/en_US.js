@@ -76,6 +76,7 @@ module.exports = {
   "menu.programManager": "Program Manager",
   "menu.constantManager": "Constant Manager",
   "menu.eventbooking": "Riders",
+  "menu.contacts": "Contacts",
   "menu.eventcreator": "Event Creator",
   "menu.chat": "Chat",
   "menu.ui": "UI",

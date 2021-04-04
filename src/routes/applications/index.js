@@ -6,6 +6,7 @@ import postBank from "./postBank";
 import programManager from "./programManager";
 import constantManager from "./constantManager";
 import audience from "./audience";
+import contacts from "./contacts";
 import eventCreator from "./eventCreator";
 // import surveyList from "./survey";
 // import surveyDetail from "./survey-detail";
@@ -20,6 +21,7 @@ const Applications = ({ match }) => (
       <Route path={`${match.url}/programManager`} component={programManager} />
       <Route path={`${match.url}/constantManager`} component={constantManager} />
       <Route path={`${match.url}/audience`} component={audience} />
+      <Route path={`${match.url}/contacts`} component={contacts} />
       <Route path={`${match.url}/eventCreator`} component={eventCreator} />
       {/* <Route
         path={`${match.url}/survey/:surveyid`}
