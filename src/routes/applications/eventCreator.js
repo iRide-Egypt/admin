@@ -605,7 +605,12 @@ class EventCreator extends Component {
             </div>
 
             <div className="mb-2">
+            <Row>
+            <Colxx xxs="11"></Colxx>
+            <Colxx xxs="1">
               <i className="simple-icon-reload align-middle ml-auto" style={{cursor:"pointer"}}onClick={()=>this.setPostsList()}/>
+            </Colxx>
+            </Row>
               {/* <Button
                 color="empty"
                 id="displayOptions"
