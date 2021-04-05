@@ -205,24 +205,25 @@ class Contacts extends Component {
   cleanModelState() {
     this.setState({
       isKnowsAboutUs: false,
-      age: undefined,
+      age: "",
+      gender: "",
       discount: 0,
-      gender: undefined,
-      email: undefined,
+      email: "",
       event: [{}],
-      medicalHistory: undefined,
-      name: undefined,
-      notes: undefined,
-      paymentMethod: undefined,
-      phone: undefined,
-      riderTag: undefined,
-      ridingEx: undefined,
-      ridingExNotes: undefined,
-      whatsapp: undefined,
-      whereKnowUs: undefined,
+      medicalHistory: "",
+      name: "",
+      notes: "",
+      paymentMethod: {},
+      phone: "",
+      riderTag: [],
+      ridingEx: {},
+      ridingExNotes: "",
+      whatsapp: "",
+      whereKnowUs: {},
       isCar: false,
       isBreakfast: false,
-      isSaqqara: false,
+      
+      
     });
   }
   labelColorSwitch(label) {
