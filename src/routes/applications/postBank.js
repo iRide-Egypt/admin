@@ -32,6 +32,7 @@ import {
   Alert,
   UncontrolledAlert,
 } from "reactstrap";
+import ConfirmationModal from "Components/ConfirmationModal";
 import Select from "react-select";
 import CustomSelectInput from "Components/CustomSelectInput";
 
@@ -467,36 +468,39 @@ class PostBank extends Component {
                               </Badge>
                             </div>
                           </CardBody>
-                          <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
-                            <i
-                              onClick={() => {
-                                this.deletePost(item.id);
-                              }}
-                              className={`${"simple-icon-trash heading-icon mr-3"}`}
-                              onMouseOver={(e) =>
-                                (e.target.style.color = "white")
-                              }
-                              onMouseOut={(e) =>
-                                (e.target.style.color = "#D86161")
-                              }
-                              onMouseDown={(e) =>
-                                (e.target.style.color = "green")
-                              }
-                              onMouseUp={(e) =>
-                                (e.target.style.color = "white")
-                              }
-                              style={{
-                                color: "#D86161",
-                                cursor: "pointer",
-                              }}
-                            />
+                          <div className="custom-control custom-checkbox pl-1 align-self-center pr-4" style={{display: "inline-flex"}}>
+                                
+                              <ConfirmationModal
+                                button={
+                                  <i
+                                    className={`${"simple-icon-trash heading-icon mr-3"}`}
+                                    onMouseOver={(e) =>
+                                      (e.target.style.color = "white")
+                                    }
+                                    onMouseOut={(e) =>
+                                      (e.target.style.color = "#D86161")
+                                    }
+                                    onMouseDown={(e) =>
+                                      (e.target.style.color = "green")
+                                    }
+                                    onMouseUp={(e) =>
+                                      (e.target.style.color = "white")
+                                    }
+                                    style={{
+                                      color: "#D86161",
+                                      cursor: "pointer",
+                                    }}
+                                  />
+                                }
+                                action={() => this.deletePost(item.id)}
+                              />
                             <i
                             // onClick={(e)=>{this.createNotification("success", "filled")}}
                               onClick={() => {
                                 this.textToClipboard(item.detail);
                                 // this.createNotification("success", "filled");
                               }}
-                              className={`${"simple-icon-notebook heading-icon"}`}
+                              className={`${"simple-icon-notebook heading-icon ml-2"}`}
                               onMouseOver={(e) =>
                                 (e.target.style.color = "white")
                               }
