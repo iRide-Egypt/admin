@@ -369,20 +369,20 @@ class Contacts extends Component {
       createdBy: olditem.createdBy,
     };
 
-    let contactList = this.state.contactsList;
-    for (let i in contactList) {
-      if (contactList[i].id === id) {
-        contactList[i] = item;
-        docRef.set({ contacts: contactList }).then(()=>{
-          this.notification("You have edited " + item.name + " !");
-          this.setRidersList();
-          this.toggleModalEdit();
-        }).catch(()=>{
-          this.notification("ERRRRROOOOR");
-        });
-         break;
-      }
-    }   
+    docRef
+    .update({
+      contacts: firebase.firestore.FieldValue.arrayRemove(olditem),
+    }).then(()=>{
+      docRef.update({
+        contacts: firebase.firestore.FieldValue.arrayUnion(item),
+      }).then(()=>{
+        this.notification("You have edited " + item.name + " !");
+        this.setContactsList();
+        this.toggleModalEdit();
+      }).catch((e)=>console.log(e))
+    }).catch(()=>{
+      this.notification("ERRRRROOOOR");
+    });
   }
   handleKeyPress(e) {
     if (e.key === "Enter") {

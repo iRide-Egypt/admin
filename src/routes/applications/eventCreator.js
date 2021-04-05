@@ -177,7 +177,7 @@ class EventCreator extends Component {
     } = this.state;
     const NUMBER_OF_PAST_EVENTS = 222;
     const id = eventsData.length ? eventsData[0].id + 1 : 0;
-    const label = type.value||"Anonymous" + " " + (id + NUMBER_OF_PAST_EVENTS + 1);
+    const label = type.value||"Anonymous " + (id + NUMBER_OF_PAST_EVENTS + 1);
     const user = localStorage.getItem("user_id")
     // const status = this.eventStatusGenerator(date);
 
@@ -420,7 +420,7 @@ class EventCreator extends Component {
                       onChange={(e) => this.handleChangeDate(e)}
                       placeholderText={"Pick A Date"}
                       dateFormat="DD/MM/YYYY"
-                      minDate={new Date()}
+                      // minDate={new Date()}
                       maxDate={
                         new Date(new Date().setMonth(new Date().getMonth() + 2))
                       }
