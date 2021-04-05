@@ -53,18 +53,18 @@ class Contacts extends Component {
     //Main Data Lists
     contactsList: null,
     eventsList: [],
-    contactsList: [],
     //................
 
     dropdownSplitOpen: false,
     lastChecked: null,
     displayOptionsIsOpen: false,
     modalOpen: false,
+    modalEditOpen: false,
 
     //Modal Default Data
     isKnowsAboutUs: false,
     age: "",
-    gender:"",  
+    gender: "",
     discount: 0,
     email: "",
     event: [{}],
@@ -81,6 +81,8 @@ class Contacts extends Component {
     isCar: false,
     isBreakfast: false,
     //.........................
+    editPostId: 0,
+    searchKeyword:""
   };
   componentDidMount() {
     this.setContactsList();
@@ -155,7 +157,33 @@ class Contacts extends Component {
       };
     });
   }
-
+  toggleModalEdit() {
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        modalEditOpen: !prevState.modalEditOpen,
+      };
+    });
+  }
+  setEditModelInputValues(item) {
+    this.setState({
+      name: item.name,
+      isKnowsAboutUs: false,
+      age: item.age,
+      gender: item.gender,
+      discount: item.discount,
+      email: item.email,
+      event: item.event || [{}],
+      medicalHistory: item.medicalHistory,
+      notes: item.notes,
+      phone: item.phone,
+      riderTag: item.riderTag || [],
+      ridingEx: { label: item.ridingEx, value: item.ridingEx } || {},
+      ridingExNotes: item.ridingExNotes || "",
+      whatsapp: item.whatsapp || "",
+      whereKnowUs: { label: item.whereKnowUs, value: item.whereKnowUs } || {},
+    });
+  }
   toggleSplit() {
     this.setState((prevState) => ({
       dropdownSplitOpen: !prevState.dropdownSplitOpen,
@@ -179,7 +207,7 @@ class Contacts extends Component {
       isKnowsAboutUs: false,
       age: undefined,
       discount: 0,
-      gender:"",
+      gender: undefined,
       email: undefined,
       event: [{}],
       medicalHistory: undefined,
@@ -245,7 +273,7 @@ class Contacts extends Component {
       discount: discount,
       email: email,
       age: age,
-      gender:gender,
+      gender: gender,
       medicalHistory: medicalHistory,
       ridingEx: ridingEx.value || "",
       ridingExNotes: ridingExNotes,
@@ -260,8 +288,8 @@ class Contacts extends Component {
       createdBy: localStorage.getItem("user_id"),
     };
 
-    if(!name || !phone || !gender ){
-      this.setState({isError:true})
+    if (!name || !phone || !gender) {
+      this.setState({ isError: true });
       return;
     }
     console.log("Contact's DATA", item);
@@ -287,12 +315,85 @@ class Contacts extends Component {
         contacts: firebase.firestore.FieldValue.arrayRemove(item),
       })
       .then(() => {
-        this.notification("You have successfully deleted "+item.name+ " !");
+        this.notification("You have successfully deleted " + item.name + " !");
         this.setRidersList();
       })
       .catch((e) => {
         console.log(e);
       });
+  }
+  editPost() {
+    const id = this.state.editPostId;
+    const olditem = this.state.contactsList.filter((e) => e.id === id)[0];
+    
+    const {
+      name,
+      event,
+      phone,
+      whatsapp,
+      discount,
+      email,
+      age,
+      medicalHistory,
+      ridingEx,
+      ridingExNotes,
+      whereKnowUs,
+      riderTag,
+      notes,
+      isKnowsAboutUs,
+      contactsList,
+      gender,
+      isCar,
+      isBreakfast,
+    } = this.state;
+
+    const item = {
+      name: name,
+      event: [event.value || ""],
+      phone: phone,
+      whatsapp: whatsapp,
+      discount: discount,
+      email: email,
+      age: age,
+      gender: gender,
+      medicalHistory: medicalHistory,
+      ridingEx: ridingEx.value || "",
+      ridingExNotes: ridingExNotes,
+      whereKnowUs: whereKnowUs.value || "",
+      riderTag: riderTag || [{ label: "", value: "", key: "" }],
+      notes: notes,
+      isKnowsAboutUs: isKnowsAboutUs,
+      id: olditem.id,
+      creationDate: olditem.creationDate,
+      lastEdited: new Date(),
+      createdBy: olditem.createdBy,
+    };
+
+    let contactList = this.state.contactsList;
+    for (let i in contactList) {
+      if (contactList[i].id === id) {
+        contactList[i] = item;
+        docRef.set({ contacts: contactList }).then(()=>{
+          this.notification("You have edited " + item.name + " !");
+          this.setRidersList();
+          this.toggleModalEdit();
+        }).catch(()=>{
+          this.notification("ERRRRROOOOR");
+        });
+         break;
+      }
+    }   
+  }
+  handleKeyPress(e) {
+    if (e.key === "Enter") {
+      this.setState({searchKeyword:e.target.value})
+      console.log(this.state.searchKeyword,"--value ",e.target.value)
+    }
+  }
+  handleOnChangeInput(e, name="") {
+    this.setState({searchKeyword:e.target.value})
+    console.log(name,"--value ",e.target.value)
+
   }
   isArabic(text) {
     var pattern = /[\u0600-\u06FF\u0750-\u077F]/;
@@ -362,10 +463,7 @@ class Contacts extends Component {
   }
 
   render() {
-    const {
-      contactsList,
-      isError
-    } = this.state;
+    const { contactsList, isError } = this.state;
 
     const ridingEx = [
       { label: "Beginner", value: "Beginner" },
@@ -437,22 +535,21 @@ class Contacts extends Component {
                     <Label className="mt-4" for="exCustomRadio">
                       <IntlMessages id="Gender *" />
                     </Label>
-                    
-                      <CustomInput
-                        type="radio"
-                        id="exCustomRadio"
-                        name="customRadio"
-                        label="Male ♂"
-                        onChange={() => this.setState({ gender: "male" })}
-                      />
-                      <CustomInput
-                        type="radio"
-                        id="exCustomRadio2"
-                        name="customRadio"
-                        label="Female ♀"
-                        onChange={() => this.setState({ gender: "female" })}
-                      />
-                    
+
+                    <CustomInput
+                      type="radio"
+                      id="exCustomRadio"
+                      name="customRadio"
+                      label="Male ♂"
+                      onChange={() => this.setState({ gender: "male" })}
+                    />
+                    <CustomInput
+                      type="radio"
+                      id="exCustomRadio2"
+                      name="customRadio"
+                      label="Female ♀"
+                      onChange={() => this.setState({ gender: "female" })}
+                    />
 
                     <Separator className="mt-5 mb-5" />
 
@@ -627,6 +724,241 @@ class Contacts extends Component {
                     </Button>
                   </ModalFooter>
                 </Modal>
+
+                {/* Edit Modal */}
+                <Modal
+                  isOpen={this.state.modalEditOpen}
+                  toggle={() => {
+                    this.toggleModalEdit();
+                    this.cleanModelState();
+                  }}
+                  wrapClassName="modal-right"
+                  // backdrop={true}
+                >
+                  <ModalHeader
+                    toggle={() => {
+                      this.toggleModalEdit();
+                      this.cleanModelState();
+                    }}
+                  >
+                    <IntlMessages id="Edit Contact" />
+                  </ModalHeader>
+                  <ModalBody>
+                    <Label className="mt-4">
+                      <IntlMessages id="Name *" />
+                    </Label>
+                    <Input
+                      type="text"
+                      defaultValue={this.state.name}
+                      onChange={(event) => {
+                        this.setState({
+                          name: event.target.value,
+                        });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Phone Number *" />
+                    </Label>
+                    <Input
+                      type="tel"
+                      defaultValue={this.state.phone}
+                      onChange={(event) => {
+                        this.setState({
+                          phone: event.target.value,
+                        });
+                      }}
+                    />
+
+                    <Label className="mt-4" for="exCustomRadio">
+                      <IntlMessages id="Gender *" />
+                    </Label>
+
+                    <CustomInput
+                      type="radio"
+                      id="exCustomRadio"
+                      name="customRadio"
+                      label="Male ♂"
+                      checked={this.state.gender === "male"}
+                      onChange={() => this.setState({ gender: "male" })}
+                    />
+                    <CustomInput
+                      type="radio"
+                      id="exCustomRadio2"
+                      name="customRadio"
+                      label="Female ♀"
+                      checked={this.state.gender === "female"}
+                      onChange={() => this.setState({ gender: "female" })}
+                    />
+
+                    <Separator className="mt-5 mb-5" />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Whatsapp Number" />
+                    </Label>
+                    <Input
+                      type="tel"
+                      defaultValue={this.state.whatsapp}
+                      onChange={(event) => {
+                        this.setState({
+                          whatsapp: event.target.value,
+                        });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Email" />
+                    </Label>
+                    <Input
+                      type="email"
+                      defaultValue={this.state.email}
+                      onChange={(event) => {
+                        this.setState({
+                          email: event.target.value,
+                        });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Age" />
+                    </Label>
+                    <Input
+                      type="number"
+                      defaultValue={this.state.age}
+                      onChange={(event) => {
+                        this.setState({
+                          age: event.target.value,
+                        });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Tag" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      isMulti
+                      name="form-field-name"
+                      value={this.state.riderTag}
+                      onChange={(e) => this.handleChangeMulti(e)}
+                      options={SELECT_DATA}
+                    />
+                    <Separator className="mt-5 mb-5" />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Medical History" />
+                    </Label>
+                    <Input
+                      type="textarea"
+                      defaultValue={this.state.medicalHistory}
+                      onChange={(event) => {
+                        this.setState({
+                          medicalHistory: event.target.value,
+                          isError: false,
+                        });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Riding Experience" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={ridingEx.map((x, i) => {
+                        return {
+                          label: x.label,
+                          value: x.value,
+                          key: i,
+                        };
+                      })}
+                      value={this.state.ridingEx}
+                      onChange={(val) => {
+                        this.setState({
+                          ridingEx: val,
+                          isError: false,
+                        });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Riding Experience Notes" />
+                    </Label>
+                    <Input
+                      type="textarea"
+                      defaultValue={this.state.ridingExNotes}
+                      onChange={(event) => {
+                        this.setState({
+                          ridingExNotes: event.target.value,
+                          isError: false,
+                        });
+                      }}
+                    />
+
+                    <Label className="mt-4">
+                      <IntlMessages id="Where did they know us" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={whereKnowUs.map((x, i) => {
+                        return {
+                          label: x.label,
+                          value: x.label,
+                          key: i,
+                          color: x.color,
+                        };
+                      })}
+                      value={this.state.whereKnowUs}
+                      onChange={(val) => {
+                        this.setState({
+                          whereKnowUs: val,
+                          isError: false,
+                        });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Notes" />
+                    </Label>
+                    <Input
+                      type="textarea"
+                      defaultValue={this.state.notes}
+                      onChange={(event) => {
+                        this.setState({
+                          notes: event.target.value,
+                          isError: false,
+                        });
+                      }}
+                    />
+                  </ModalBody>
+                  {isError && (
+                    <p className="text-danger text-center">
+                      Obligatory fields must be filled!
+                    </p>
+                  )}
+                  <ModalFooter>
+                    <Button
+                      color="danger"
+                      outline
+                      onClick={() => {
+                        this.toggleModalEdit();
+                        this.cleanModelState();
+                      }}
+                    >
+                      <IntlMessages id="survey.cancel" />
+                    </Button>
+                    <Button
+                      color="primary"
+                      outline="light"
+                      onClick={() => this.editPost()}
+                    >
+                      <IntlMessages id="survey.submit" />
+                    </Button>
+                  </ModalFooter>
+                </Modal>
               </div>
             </div>
 
@@ -641,12 +973,59 @@ class Contacts extends Component {
                 <i className="simple-icon-arrow-down align-middle" />
               </Button> */}
             </div>
+            <div className="mb-2">
+              <Button
+                color="empty"
+                id="displayOptions"
+                className="pt-0 pl-0 d-inline-block d-md-none"
+                onClick={()=>this.toggleDisplayOptions()}
+              >
+                <IntlMessages id="todo.display-options" />{" "}
+                <i className="simple-icon-arrow-down align-middle" />
+              </Button>
+              <Collapse
+                className="d-md-block"
+                isOpen={this.state.displayOptionsIsOpen}
+              >
+                <div className="d-block mb-2 d-md-inline-block">
+                  {/* <UncontrolledDropdown className="mr-1 float-md-left btn-group mb-1">
+                    <DropdownToggle caret color="outline-dark" size="xs">
+                      <IntlMessages id="todo.orderby" />
+                      {"orderColumn.label"}
+                    </DropdownToggle>
+                    <DropdownMenu>
+                     
+                          <DropdownItem
+                            onClick={console.log(
+                              "change order by name"
+                            )}
+                          >
+                           Name
+                          </DropdownItem>
+                       
+                    </DropdownMenu>
+                  </UncontrolledDropdown> */}
+                  <div className="search-sm d-inline-block float-md-left mr-1 mb-1 align-top">
+                    <input
+                      type="text"
+                      name="keyword"
+                      id="search"
+                      placeholder={"Search..."}
+                      defaultValue={this.state.searchKeyword}
+                      onChange={(e) => this.handleOnChangeInput(e)}
+                      onKeyPress={(e) => this.handleKeyPress(e)}
+                    />
+                  </div>
+                </div>
+              </Collapse>
+            </div>
             <Separator className="mb-5" />
 
             <Row>
               {contactsList ? (
                 contactsList.map((item, index) => {
                   return (
+                    item.name.toUpperCase().includes(this.state.searchKeyword.toUpperCase())?
                     <Fragment key={index}>
                       <Colxx xxs="12" key={index}>
                         <Card className="card d-flex mb-1">
@@ -657,7 +1036,7 @@ class Contacts extends Component {
                                 id={`toggler${item.id}`}
                                 className="list-item-heading mb-0 truncate w-40 w-xs-100  mb-1 mt-1"
                                 style={{ cursor: "default" }}
-                                // onClick={() => this.toggleAccordion(item.id)}
+                                onClick={() => console.log(item)}
                               >
                                 <span
                                   className={
@@ -681,7 +1060,10 @@ class Contacts extends Component {
                                 </Badge>
                               </div>
                             </CardBody>
-                            <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                            <div
+                              className=" custom-checkbox pl-1 align-self-center pr-4"
+                              style={{ display: "inline-flex" }}
+                            >
                               <ConfirmationModal
                                 button={
                                   <i
@@ -706,16 +1088,13 @@ class Contacts extends Component {
                                 }
                                 action={() => this.deletePost(item.id)}
                               />
-                              {/* <i
-                                onClick={() => {
-                                  this.deletePost(item.id);
-                                }}
-                                className={`${"simple-icon-trash heading-icon mr-3"}`}
+                              <i
+                                className={`${"simple-icon-wrench heading-icon ml-2 mr-3"}`}
                                 onMouseOver={(e) =>
                                   (e.target.style.color = "white")
                                 }
                                 onMouseOut={(e) =>
-                                  (e.target.style.color = "#D86161")
+                                  (e.target.style.color = "orange")
                                 }
                                 onMouseDown={(e) =>
                                   (e.target.style.color = "green")
@@ -724,10 +1103,16 @@ class Contacts extends Component {
                                   (e.target.style.color = "white")
                                 }
                                 style={{
-                                  color: "#D86161",
+                                  color: "orange",
                                   cursor: "pointer",
                                 }}
-                              /> */}
+                                onClick={() => {
+                                  console.log(item);
+                                  this.setEditModelInputValues(item);
+                                  this.toggleModalEdit();
+                                  this.setState({editPostId:item.id})
+                                }}
+                              />
                             </div>
                           </div>
                         </Card>
@@ -784,7 +1169,7 @@ class Contacts extends Component {
                           </Card>
                         </UncontrolledCollapse>
                       </Colxx>
-                    </Fragment>
+                    </Fragment>:<Fragment></Fragment>
                   );
                 })
               ) : (
