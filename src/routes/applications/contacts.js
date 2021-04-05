@@ -34,6 +34,7 @@ import {
   CardHeader,
   UncontrolledCollapse,
 } from "reactstrap";
+import Switch from "rc-switch";
 import ReactAutosuggest from "Components/ReactAutosuggest";
 import ConfirmationModal from "Components/ConfirmationModal";
 import Select from "react-select";
@@ -82,7 +83,9 @@ class Contacts extends Component {
     isBreakfast: false,
     //.........................
     editPostId: 0,
-    searchKeyword:""
+    searchKeyword: "",
+    switchCheckedPrimary: false,
+    bulkText:""
   };
   componentDidMount() {
     this.setContactsList();
@@ -222,8 +225,6 @@ class Contacts extends Component {
       whereKnowUs: {},
       isCar: false,
       isBreakfast: false,
-      
-      
     });
   }
   labelColorSwitch(label) {
@@ -241,6 +242,7 @@ class Contacts extends Component {
         return "light";
     }
   }
+
   addPost() {
     const {
       name,
@@ -303,12 +305,67 @@ class Contacts extends Component {
         this.notification("You have successfully created a new contact!");
         this.cleanModelState();
         this.toggleModal();
+        console.log(item);
       })
       .catch((err) => {
         console.log(err);
       });
   }
+  addBatch() {
+    let batchText = this.state.bulkText;
+    if(!batchText.includes("*")||!batchText.includes("/")){
+      this.setState({isError: true})
+      return;
+    }
+    let arrObj = [];
+    const { contactsList } = this.state;
+    let id = contactsList.length ? contactsList[0].id + 1 : 0;
+    batchText.trim().replace(/[\n\r]+/g, "");
+    const newArr = batchText.split("*");
 
+    for (let i = 0; i < newArr.length; i++) {
+      let arr = newArr[i].trim().split("/");
+      arrObj.push({
+        age: "",
+        createdBy: localStorage.getItem("user_id"),
+        creationDate: new Date(),
+        discount: 0,
+        email: "",
+        event: [""],
+        gender: arr[2] === "M" ? "male" : "female",
+        id: id,
+        isBreakfast: false,
+        isCar: false,
+        isKnowsAboutUs: false,
+        medicalHistory: "",
+        name: arr[0] || "",
+        notes: "",
+        phone: arr[1] || "",
+        riderTag: [],
+        ridingEx: "",
+        ridingExNotes: "",
+        whatsapp: arr[3] || "",
+        whereKnowUs: "",
+      });
+      console.log(arr);
+      id++;
+    }
+    console.log(arrObj);
+
+    docRef
+      .update({
+        contacts: firebase.firestore.FieldValue.arrayUnion.apply(null, arrObj),
+      })
+      .then(() => {
+        this.notification("You have successfully added a bulk of elements!");
+        this.setRidersList();
+        this.cleanModelState();
+        this.toggleModal();
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
   deletePost(id) {
     const item = this.state.contactsList.filter((e) => e.id === id)[0];
     docRef
@@ -326,7 +383,7 @@ class Contacts extends Component {
   editPost() {
     const id = this.state.editPostId;
     const olditem = this.state.contactsList.filter((e) => e.id === id)[0];
-    
+
     const {
       name,
       event,
@@ -371,30 +428,34 @@ class Contacts extends Component {
     };
 
     docRef
-    .update({
-      contacts: firebase.firestore.FieldValue.arrayRemove(olditem),
-    }).then(()=>{
-      docRef.update({
-        contacts: firebase.firestore.FieldValue.arrayUnion(item),
-      }).then(()=>{
-        this.notification("You have edited " + item.name + " !");
-        this.setContactsList();
-        this.toggleModalEdit();
-      }).catch((e)=>console.log(e))
-    }).catch(()=>{
-      this.notification("ERRRRROOOOR");
-    });
+      .update({
+        contacts: firebase.firestore.FieldValue.arrayRemove(olditem),
+      })
+      .then(() => {
+        docRef
+          .update({
+            contacts: firebase.firestore.FieldValue.arrayUnion(item),
+          })
+          .then(() => {
+            this.notification("You have edited " + item.name + " !");
+            this.setContactsList();
+            this.toggleModalEdit();
+          })
+          .catch((e) => console.log(e));
+      })
+      .catch(() => {
+        this.notification("ERRRRROOOOR");
+      });
   }
   handleKeyPress(e) {
     if (e.key === "Enter") {
-      this.setState({searchKeyword:e.target.value})
-      console.log(this.state.searchKeyword,"--value ",e.target.value)
+      this.setState({ searchKeyword: e.target.value });
+      console.log(this.state.searchKeyword, "--value ", e.target.value);
     }
   }
-  handleOnChangeInput(e, name="") {
-    this.setState({searchKeyword:e.target.value})
-    console.log(name,"--value ",e.target.value)
-
+  handleOnChangeInput(e, name = "") {
+    this.setState({ searchKeyword: e.target.value });
+    console.log(name, "--value ", e.target.value);
   }
   isArabic(text) {
     var pattern = /[\u0600-\u06FF\u0750-\u077F]/;
@@ -513,199 +574,209 @@ class Contacts extends Component {
                   </ModalHeader>
                   <ModalBody>
                     <Label className="mt-4">
-                      <IntlMessages id="Name *" />
+                      <IntlMessages id="Bulk" />
                     </Label>
-                    <Input
-                      type="text"
-                      defaultValue={this.state.name}
-                      onChange={(event) => {
-                        this.setState({ name: event.target.value });
-                      }}
-                    />
-                    <Label className="mt-4">
-                      <IntlMessages id="Phone Number *" />
-                    </Label>
-                    <Input
-                      type="tel"
-                      defaultValue={this.state.phone}
-                      onChange={(event) => {
-                        this.setState({ phone: event.target.value });
+                    <Switch
+                      className="custom-switch custom-switch-primary"
+                      checked={this.state.switchCheckedPrimary}
+                      onChange={(switchCheckedPrimary) => {
+                        this.setState({ switchCheckedPrimary });
                       }}
                     />
 
-                    <Label className="mt-4" for="exCustomRadio">
-                      <IntlMessages id="Gender *" />
-                    </Label>
+                    {!this.state.switchCheckedPrimary ? (
+                      <Fragment>
+                        <Label className="mt-4">
+                          <IntlMessages id="Name *" />
+                        </Label>
+                        <Input
+                          type="text"
+                          defaultValue={this.state.name}
+                          onChange={(event) => {
+                            this.setState({ name: event.target.value });
+                          }}
+                        />
+                        <Label className="mt-4">
+                          <IntlMessages id="Phone Number *" />
+                        </Label>
+                        <Input
+                          type="tel"
+                          defaultValue={this.state.phone}
+                          onChange={(event) => {
+                            this.setState({ phone: event.target.value });
+                          }}
+                        />
 
-                    <CustomInput
-                      type="radio"
-                      id="exCustomRadio"
-                      name="customRadio"
-                      label="Male ♂"
-                      onChange={() => this.setState({ gender: "male" })}
-                    />
-                    <CustomInput
-                      type="radio"
-                      id="exCustomRadio2"
-                      name="customRadio"
-                      label="Female ♀"
-                      onChange={() => this.setState({ gender: "female" })}
-                    />
+                        <Label className="mt-4" for="exCustomRadio">
+                          <IntlMessages id="Gender *" />
+                        </Label>
 
-                    <Separator className="mt-5 mb-5" />
+                        <CustomInput
+                          type="radio"
+                          id="exCustomRadio"
+                          name="customRadio"
+                          label="Male ♂"
+                          onChange={() => this.setState({ gender: "male" })}
+                        />
+                        <CustomInput
+                          type="radio"
+                          id="exCustomRadio2"
+                          name="customRadio"
+                          label="Female ♀"
+                          onChange={() => this.setState({ gender: "female" })}
+                        />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Whatsapp Number" />
-                    </Label>
-                    <Input
-                      type="tel"
-                      defaultValue={this.state.whatsapp}
-                      onChange={(event) => {
-                        this.setState({ whatsapp: event.target.value });
-                      }}
-                    />
-                    <Label className="mt-4">
-                      <IntlMessages id="Email" />
-                    </Label>
-                    <Input
-                      type="email"
-                      defaultValue={this.state.email}
-                      onChange={(event) => {
-                        this.setState({ email: event.target.value });
-                      }}
-                    />
+                        <Separator className="mt-5 mb-5" />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Age" />
-                    </Label>
-                    <Input
-                      type="number"
-                      defaultValue={this.state.age}
-                      onChange={(event) => {
-                        this.setState({ age: event.target.value });
-                      }}
-                    />
-                    <Label className="mt-4">
-                      <IntlMessages id="Tag" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      isMulti
-                      name="form-field-name"
-                      value={this.state.riderTag}
-                      onChange={(e) => this.handleChangeMulti(e)}
-                      options={SELECT_DATA}
-                    />
-                    <Separator className="mt-5 mb-5" />
+                        <Label className="mt-4">
+                          <IntlMessages id="Whatsapp Number" />
+                        </Label>
+                        <Input
+                          type="tel"
+                          defaultValue={this.state.whatsapp}
+                          onChange={(event) => {
+                            this.setState({ whatsapp: event.target.value });
+                          }}
+                        />
+                        <Label className="mt-4">
+                          <IntlMessages id="Email" />
+                        </Label>
+                        <Input
+                          type="email"
+                          defaultValue={this.state.email}
+                          onChange={(event) => {
+                            this.setState({ email: event.target.value });
+                          }}
+                        />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Medical History" />
-                    </Label>
-                    <Input
-                      type="textarea"
-                      defaultValue={this.state.medicalHistory}
-                      onChange={(event) => {
-                        this.setState({
-                          medicalHistory: event.target.value,
-                          isError: false,
-                        });
-                      }}
-                    />
+                        <Label className="mt-4">
+                          <IntlMessages id="Age" />
+                        </Label>
+                        <Input
+                          type="number"
+                          defaultValue={this.state.age}
+                          onChange={(event) => {
+                            this.setState({ age: event.target.value });
+                          }}
+                        />
+                        <Label className="mt-4">
+                          <IntlMessages id="Tag" />
+                        </Label>
+                        <Select
+                          components={{ Input: CustomSelectInput }}
+                          className="react-select"
+                          classNamePrefix="react-select"
+                          isMulti
+                          name="form-field-name"
+                          value={this.state.riderTag}
+                          onChange={(e) => this.handleChangeMulti(e)}
+                          options={SELECT_DATA}
+                        />
+                        <Separator className="mt-5 mb-5" />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Riding Experience" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      name="form-field-name"
-                      options={ridingEx.map((x, i) => {
-                        return { label: x.label, value: x.value, key: i };
-                      })}
-                      value={this.state.ridingEx}
-                      onChange={(val) => {
-                        this.setState({ ridingEx: val, isError: false });
-                      }}
-                    />
+                        <Label className="mt-4">
+                          <IntlMessages id="Medical History" />
+                        </Label>
+                        <Input
+                          type="textarea"
+                          defaultValue={this.state.medicalHistory}
+                          onChange={(event) => {
+                            this.setState({
+                              medicalHistory: event.target.value,
+                              isError: false,
+                            });
+                          }}
+                        />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Riding Experience Notes" />
-                    </Label>
-                    <Input
-                      type="textarea"
-                      defaultValue={this.state.ridingExNotes}
-                      onChange={(event) => {
-                        this.setState({
-                          ridingExNotes: event.target.value,
-                          isError: false,
-                        });
-                      }}
-                    />
+                        <Label className="mt-4">
+                          <IntlMessages id="Riding Experience" />
+                        </Label>
+                        <Select
+                          components={{ Input: CustomSelectInput }}
+                          className="react-select"
+                          classNamePrefix="react-select"
+                          name="form-field-name"
+                          options={ridingEx.map((x, i) => {
+                            return { label: x.label, value: x.value, key: i };
+                          })}
+                          value={this.state.ridingEx}
+                          onChange={(val) => {
+                            this.setState({ ridingEx: val, isError: false });
+                          }}
+                        />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Where did they know us" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      name="form-field-name"
-                      options={whereKnowUs.map((x, i) => {
-                        return {
-                          label: x.label,
-                          value: x.label,
-                          key: i,
-                          color: x.color,
-                        };
-                      })}
-                      value={this.state.whereKnowUs}
-                      onChange={(val) => {
-                        this.setState({ whereKnowUs: val, isError: false });
-                      }}
-                    />
+                        <Label className="mt-4">
+                          <IntlMessages id="Riding Experience Notes" />
+                        </Label>
+                        <Input
+                          type="textarea"
+                          defaultValue={this.state.ridingExNotes}
+                          onChange={(event) => {
+                            this.setState({
+                              ridingExNotes: event.target.value,
+                              isError: false,
+                            });
+                          }}
+                        />
 
-                    {/* <Label className="mt-4">
-                      <IntlMessages id="Payment Method" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      name="form-field-name"
-                      options={paymentMethod.map((x, i) => {
-                        return {
-                          label: x.label,
-                          value: x.label,
-                          key: i,
-                          color: x.color,
-                        };
-                      })}
-                      value={this.state.paymentMethod}
-                      onChange={(val) => {
-                        this.setState({ paymentMethod: val, isError: false });
-                      }}
-                    /> */}
+                        <Label className="mt-4">
+                          <IntlMessages id="Where did they know us" />
+                        </Label>
+                        <Select
+                          components={{ Input: CustomSelectInput }}
+                          className="react-select"
+                          classNamePrefix="react-select"
+                          name="form-field-name"
+                          options={whereKnowUs.map((x, i) => {
+                            return {
+                              label: x.label,
+                              value: x.label,
+                              key: i,
+                              color: x.color,
+                            };
+                          })}
+                          value={this.state.whereKnowUs}
+                          onChange={(val) => {
+                            this.setState({ whereKnowUs: val, isError: false });
+                          }}
+                        />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Notes" />
-                    </Label>
-                    <Input
-                      type="textarea"
-                      defaultValue={this.state.notes}
-                      onChange={(event) => {
-                        this.setState({
-                          notes: event.target.value,
-                          isError: false,
-                        });
-                      }}
-                    />
+                        <Label className="mt-4">
+                          <IntlMessages id="Notes" />
+                        </Label>
+                        <Input
+                          type="textarea"
+                          defaultValue={this.state.notes}
+                          onChange={(event) => {
+                            this.setState({
+                              notes: event.target.value,
+                              isError: false,
+                            });
+                          }}
+                        />
+                      </Fragment>
+                    ) : (
+                      <Fragment>
+                        <Label className="mt-4">
+                          <IntlMessages id="Bulk" />
+                        </Label>
+                        <Input
+                          height="150px"
+                          type="textarea"
+                          defaultValue={this.state.bulkText}
+                          onChange={(event) => {
+                            this.setState({
+                              bulkText: event.target.value,
+                              isError: false,
+                            });
+                          }}
+                        />
+                      </Fragment>
+                    )}
                   </ModalBody>
                   {isError && (
                     <p className="text-danger text-center">
-                      Obligatory fields must be filled!
+                      Check your data and try again!
                     </p>
                   )}
                   <ModalFooter>
@@ -719,7 +790,7 @@ class Contacts extends Component {
                     <Button
                       color="primary"
                       outline="light"
-                      onClick={() => this.addPost()}
+                      onClick={() => !this.state.switchCheckedPrimary?this.addPost():this.addBatch()}
                     >
                       <IntlMessages id="survey.submit" />
                     </Button>
@@ -964,6 +1035,7 @@ class Contacts extends Component {
             </div>
 
             <div className="mb-2">
+              {/* <Button onClick={() => this.addBatch()}>TEST</Button> */}
               {/* <Button
                 color="empty"
                 id="displayOptions"
@@ -979,7 +1051,7 @@ class Contacts extends Component {
                 color="empty"
                 id="displayOptions"
                 className="pt-0 pl-0 d-inline-block d-md-none"
-                onClick={()=>this.toggleDisplayOptions()}
+                onClick={() => this.toggleDisplayOptions()}
               >
                 <IntlMessages id="todo.display-options" />{" "}
                 <i className="simple-icon-arrow-down align-middle" />
@@ -1025,8 +1097,9 @@ class Contacts extends Component {
             <Row>
               {contactsList ? (
                 contactsList.map((item, index) => {
-                  return (
-                    item.name.toUpperCase().includes(this.state.searchKeyword.toUpperCase())?
+                  return item.name
+                    .toUpperCase()
+                    .includes(this.state.searchKeyword.toUpperCase()) ? (
                     <Fragment key={index}>
                       <Colxx xxs="12" key={index}>
                         <Card className="card d-flex mb-1">
@@ -1111,7 +1184,7 @@ class Contacts extends Component {
                                   console.log(item);
                                   this.setEditModelInputValues(item);
                                   this.toggleModalEdit();
-                                  this.setState({editPostId:item.id})
+                                  this.setState({ editPostId: item.id });
                                 }}
                               />
                             </div>
@@ -1170,7 +1243,9 @@ class Contacts extends Component {
                           </Card>
                         </UncontrolledCollapse>
                       </Colxx>
-                    </Fragment>:<Fragment></Fragment>
+                    </Fragment>
+                  ) : (
+                    <Fragment></Fragment>
                   );
                 })
               ) : (
