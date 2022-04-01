@@ -63,6 +63,7 @@
     "firebase": "^5.3.0",
     "gh-pages": "^3.1.0",
     "moment": "2.22.2",
+    "qr-scanner": "^1.4.1",
     "rc-slider": "^8.6.1",
     "rc-switch": "^1.6.0",
     "react": "^16.4.1",

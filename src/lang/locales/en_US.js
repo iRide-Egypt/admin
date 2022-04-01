@@ -73,6 +73,7 @@ module.exports = {
   "menu.survey": "Survey",
   "menu.eventgenerator": "Event Generator",
   "menu.postbank": "Post Bank",
+  "menu.qrReader": "Qr Reader",
   "menu.programManager": "Program Manager",
   "menu.constantManager": "Constant Manager",
   "menu.eventbooking": "Riders",

@@ -3,6 +3,7 @@ import { Redirect, Route, Switch } from "react-router-dom";
 
 import todo from "./todo";
 import postBank from "./postBank";
+import qrReader from "./qrReader";
 import programManager from "./programManager";
 import constantManager from "./constantManager";
 import audience from "./audience";
@@ -18,6 +19,7 @@ const Applications = ({ match }) => (
       <Redirect exact from={`${match.url}/`} to={`${match.url}/todo`} />
       <Route path={`${match.url}/todo`} component={todo} />
       <Route path={`${match.url}/postBank`} component={postBank} />
+      <Route path={`${match.url}/qrReader`} component={qrReader} />
       <Route path={`${match.url}/programManager`} component={programManager} />
       <Route path={`${match.url}/constantManager`} component={constantManager} />
       <Route path={`${match.url}/audience`} component={audience} />

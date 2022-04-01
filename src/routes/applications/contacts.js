@@ -225,6 +225,7 @@ class Contacts extends Component {
       whereKnowUs: {},
       isCar: false,
       isBreakfast: false,
+      switchCheckedPrimary:false
     });
   }
   labelColorSwitch(label) {

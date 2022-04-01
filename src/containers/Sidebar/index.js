@@ -468,6 +468,12 @@ class Sidebar extends Component {
                   </NavLink>
                 </NavItem>
                 <NavItem>
+                  <NavLink to="/app/applications/qrReader">
+                    <i className="simple-icon-puzzle" />{" "}
+                    <IntlMessages id="menu.qrReader" />
+                  </NavLink>
+                </NavItem>
+                <NavItem>
                   <NavLink to="/app/applications/programManager">
                     <i className="simple-icon-puzzle" />{" "}
                     <IntlMessages id="menu.programManager" />
