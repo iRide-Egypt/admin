@@ -47,6 +47,8 @@ import { NotificationManager } from "Components/ReactNotifications";
 const docRef = db.collection("app").doc("postBank");
 let timer;
 
+const that = this;
+
 class QrReader extends Component {
   state = {
     visible: true,
@@ -63,8 +65,21 @@ class QrReader extends Component {
     label: {},
     category: {},
     status: "ACTIVE",
+    loading: false,
+    open: false,
+    modalBodyResult: "",
   };
   componentDidMount() {
+    this.qrReaderInit();
+  }
+
+  componentWillUnmount() {
+    if (this._asyncRequest) {
+      this._asyncRequest.cancel();
+    }
+  }
+
+  qrReaderInit() {
     const video = document.getElementById("qr-video");
     const videoContainer = document.getElementById("video-container");
     const camHasCamera = document.getElementById("cam-has-camera");
@@ -78,21 +93,25 @@ class QrReader extends Component {
     );
     const fileSelector = document.getElementById("file-selector");
     const fileQrResult = document.getElementById("file-qr-result");
+    const that = this;
 
     function setResult(label, result) {
       console.log(result.data);
       label.textContent = result.data;
       camQrResultTimestamp.textContent = new Date().toString();
       label.style.color = "teal";
+      scanner.stop();
+      that.setState({
+        loading: false,
+        open: true,
+        modalBodyResult: result.data,
+      });
       clearTimeout(label.highlightTimeout);
-      label.highlightTimeout = setTimeout(
-        () => (label.style.color = "inherit"),
-        100
-      );
+      label.highlightTimeout = setTimeout(() => {
+        label.style.color = "inherit";
+      }, 2000);
     }
-
     // ####### Web Cam Scanning #######
-
     const scanner = new QrScanner(
       video,
       (result) => setResult(camQrResult, result),
@@ -130,46 +149,46 @@ class QrReader extends Component {
     });
 
     QrScanner.hasCamera().then(
-      (hasCamera) => (camHasCamera.textContent = hasCamera)
+      (hasCamera) => !hasCamera && alert("Your device does not have camera!")
     );
 
     // for debugging
-    window.scanner = scanner;
+    // window.scanner = scanner;
+    videoContainer.className = "example-style-2";
+    scanner._updateOverlay();
+    // document
+    //   .getElementById("scan-region-highlight-style-select")
+    //   .addEventListener("change", (e) => {
+    //     videoContainer.className = "example-style-2";
+    //     scanner._updateOverlay(); // reposition the highlight because style 2 sets position: relative
+    //   });
 
-    document
-      .getElementById("scan-region-highlight-style-select")
-      .addEventListener("change", (e) => {
-        videoContainer.className = e.target.value;
-        scanner._updateOverlay(); // reposition the highlight because style 2 sets position: relative
-      });
-
-    document
-      .getElementById("show-scan-region")
-      .addEventListener("change", (e) => {
-        const input = e.target;
-        const label = input.parentNode;
-        label.parentNode.insertBefore(scanner.$canvas, label.nextSibling);
-        scanner.$canvas.style.display = input.checked ? "block" : "none";
-      });
-
-    document
-      .getElementById("inversion-mode-select")
-      .addEventListener("change", (event) => {
-        scanner.setInversionMode(event.target.value);
-      });
+    // document
+    //   .getElementById("show-scan-region")
+    //   .addEventListener("change", (e) => {
+    //     const input = e.target;
+    //     const label = input.parentNode;
+    //     label.parentNode.insertBefore(scanner.$canvas, label.nextSibling);
+    //     scanner.$canvas.style.display = input.checked ? "block" : "none";
+    //   });
+    scanner.setInversionMode("original");
+    // document
+    //   .getElementById("inversion-mode-select")
+    //   .addEventListener("change", (event) => {
+    //     scanner.setInversionMode("both");
+    //   });
 
     camList.addEventListener("change", (event) => {
       scanner.setCamera(event.target.value).then(updateFlashAvailability);
     });
 
-    flashToggle.addEventListener("click", () => {
-      scanner
-        .toggleFlash()
-        .then(
-          () => (flashState.textContent = scanner.isFlashOn() ? "on" : "off")
-        );
-    });
-
+    // flashToggle.addEventListener("click", () => {
+    //   scanner
+    //     .toggleFlash()
+    //     .then(
+    //       () => (flashState.textContent = scanner.isFlashOn() ? "on" : "off")
+    //     );
+    // });
     document.getElementById("start-button").addEventListener("click", () => {
       scanner.start();
     });
@@ -191,26 +210,10 @@ class QrReader extends Component {
           setResult(fileQrResult, { data: e || "No QR code found." })
         );
     });
-
-    this.setPostsList();
-  }
-
-  componentWillUnmount() {
-    if (this._asyncRequest) {
-      this._asyncRequest.cancel();
-    }
   }
   onDismiss() {
     this.setState({ visible: false });
   }
-  setPostsList = () => {
-    this._asyncRequest = docRef.get().then((doc) => {
-      if (!doc.data().posts) return;
-      this._asyncRequest = null;
-
-      this.setState({ postData: doc.data().posts });
-    });
-  };
 
   toggleDisplayOptions() {
     this.setState({ displayOptionsIsOpen: !this.state.displayOptionsIsOpen });
@@ -310,19 +313,6 @@ class QrReader extends Component {
       });
   }
 
-  deletePost(id) {
-    const item = this.state.postData.filter((e) => e.id === id)[0];
-    docRef
-      .update({
-        posts: firebase.firestore.FieldValue.arrayRemove(item),
-      })
-      .then(() => {
-        this.setPostsList();
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }
   isArabic(text) {
     var pattern = /[\u0600-\u06FF\u0750-\u077F]/;
     console.log(pattern.test(text));
@@ -367,7 +357,7 @@ class QrReader extends Component {
   }
 
   render() {
-    const { postData, isCopied, fadeClass, errorMessage, isError } = this.state;
+    const { isError, loading, open, modalBodyResult } = this.state;
 
     const categories = [
       { label: "Paid", value: "Paid" },
@@ -385,6 +375,19 @@ class QrReader extends Component {
         <Row className="app-row survey-app pr-0">
           <Colxx xxs="12">
             <div className="mb-2">
+              <Modal
+                isOpen={open}
+                toggle={() => {
+                  this.setState({ open: false });
+                  document.getElementById("start-button").click();
+                }}
+              >
+                <ModalBody>
+                  <p style={{ overflowWrap: "break-word" }}>
+                    {modalBodyResult}
+                  </p>
+                </ModalBody>
+              </Modal>
               <h1>
                 <IntlMessages id="menu.qrReader" />
               </h1>
@@ -544,15 +547,19 @@ class QrReader extends Component {
                     <CardBody className="align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
                       <Colxx xxs="12">
                         <Row>
-                          <h1>Scan from WebCam:</h1>
+                          <h1>Qr Reader</h1>
                         </Row>
 
                         <Row>
-                          <div id="video-container">
-                            <video id="qr-video"></video>
-                          </div>
+                          {loading ? (
+                            <div className="loading" />
+                          ) : (
+                            <div id="video-container">
+                              <video id="qr-video"></video>
+                            </div>
+                          )}
                         </Row>
-                        <Row>
+                        {/* <Row>
                           <div>
                             <label>
                               Highlight Style
@@ -573,8 +580,8 @@ class QrReader extends Component {
                               Show scan region canvas
                             </label>
                           </div>
-                        </Row>
-                        <Row>
+                        </Row> */}
+                        {/* <Row>
                           <div>
                             <select id="inversion-mode-select">
                               <option value="original">
@@ -589,7 +596,7 @@ class QrReader extends Component {
                             </select>
                             <br />
                           </div>
-                        </Row>
+                        </Row> */}
                         <Row>
                           <br />
                           <b>Device has camera: </b>
