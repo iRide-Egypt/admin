@@ -253,7 +253,7 @@ class Sidebar extends Component {
               option={{ suppressScrollX: true, wheelPropagation: false }}
             >
               <Nav vertical className="list-unstyled">
-                <NavItem
+                {/* <NavItem
                   className={classnames({
                     active: ((this.state.selectedParentMenu == "dashboards" && this.state.viewingParentMenu=="" )|| this.state.viewingParentMenu=="dashboards")
                   })}
@@ -265,7 +265,7 @@ class Sidebar extends Component {
                     <i className="iconsmind-Computer" />{" "}
                     <IntlMessages id="menu.dashboards" />
                   </NavLink>
-                </NavItem>
+                </NavItem> */}
 
 
                

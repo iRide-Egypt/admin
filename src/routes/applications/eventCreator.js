@@ -1,38 +1,18 @@
 import React, { Component, Fragment } from "react";
 import IntlMessages from "Util/IntlMessages";
-import { injectIntl } from "react-intl";
 import DatePicker from "react-datepicker";
 import {
   Row,
   Card,
   CardBody,
-  Nav,
-  NavItem,
   Button,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownItem,
-  DropdownMenu,
-  TabContent,
-  TabPane,
   Badge,
-  Collapse,
-  ButtonDropdown,
-  CardSubtitle,
-  CardTitle,
-  CardImg,
-  CardText,
-  FormGroup,
-  CustomInput,
   Label,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
   Input,
-  Accordion,
-  Toggle,
-  CardHeader,
   UncontrolledCollapse,
 } from "reactstrap";
 
@@ -47,14 +27,6 @@ import { db } from "../../firebase";
 
 //Date picker
 
-import moment from "moment";
-import TagsInput from "react-tagsinput";
-import Switch from "rc-switch";
-import ReactAutosuggest from "Components/ReactAutosuggest";
-import Rating from "Components/Rating";
-import { SliderTooltip, RangeTooltip } from "Components/SliderTooltip";
-import FineUploaderTraditional from "fine-uploader-wrappers";
-import Gallery from "react-fine-uploader";
 import ConfirmationModal from "Components/ConfirmationModal";
 import "react-tagsinput/react-tagsinput.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -63,9 +35,11 @@ import "rc-slider/assets/index.css";
 import "react-rater/lib/react-rater.css";
 import "react-fine-uploader/gallery/gallery.css";
 import { NotificationManager } from "Components/ReactNotifications";
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 const docRef = db.collection("app").doc("events");
-let timer;
+const docRidersRef = db.collection("app").doc("riders");
+
 class EventCreator extends Component {
   state = {
     dropdownSplitOpen: false,
@@ -74,19 +48,22 @@ class EventCreator extends Component {
     errorMessage: null,
 
     modalOpen: false,
+    modalEditOpen:false,
     //Main Data
     eventsData: null,
     //Modal Data
     type: "",
-    eventTag: [],
-    program: "",
+    organiser: [],
+    program: {},
     notes: "",
     //Date
+    ridersData: null,
     eventDate: null,
     eventNumber: null,
   };
   componentDidMount() {
     this.setPostsList();
+    this.setRidersList();
     this.setEventNumber();
   }
 
@@ -101,10 +78,9 @@ class EventCreator extends Component {
       .then((doc) => {
         if (!doc.data().eventNumber) return;
         this._asyncRequest = null;
-        console.log("Event Number ", doc.data().eventNumber);
         this.setState({ eventNumber: doc.data().eventNumber });
       })
-      .catch((err) => {
+      .catch(() => {
         this.setState({ eventNumber: null });
       });
   };
@@ -112,28 +88,34 @@ class EventCreator extends Component {
     const increment = firebase.firestore.FieldValue.increment(1);
     docRef.update({ eventNumber: increment });
   };
-  decEventNumber = () => {
-    const decrement = firebase.firestore.FieldValue.increment(-1);
-    docRef.update({ eventNumber: decrement });
+  setRidersList = () => {
+    this._asyncRequest = docRidersRef
+      .get()
+      .then((doc) => {
+        if (!doc.data().riders) return;
+        this._asyncRequest = null;
+
+        this.setState({ ridersData: doc.data().riders.reverse() });
+      })
+      .catch(() => {
+        this.setState({ ridersData: [] });
+      });
   };
   setPostsList = () => {
-    this._asyncRequest = docRef
+    return this._asyncRequest = docRef
       .get()
       .then((doc) => {
         if (!doc.data().events) return;
         this._asyncRequest = null;
-        console.log(doc.data().events);
         this.setState({ eventsData: doc.data().events.reverse() });
       })
-      .catch((err) => {
+      .catch(() => {
         this.setState({ eventsData: [] });
       });
   };
-
   toggleDisplayOptions() {
     this.setState({ displayOptionsIsOpen: !this.state.displayOptionsIsOpen });
   }
-
   toggleModal() {
     this.setState((prevState) => {
       return {
@@ -142,63 +124,44 @@ class EventCreator extends Component {
       };
     });
   }
-
-  toggleSplit() {
-    this.setState((prevState) => ({
-      dropdownSplitOpen: !prevState.dropdownSplitOpen,
-    }));
-  }
   formatDate(date) {
     const ye = new Intl.DateTimeFormat("en", { year: "numeric" }).format(date);
-    const mo = new Intl.DateTimeFormat("en", { month: "short" }).format(date);
+    const mo = new Intl.DateTimeFormat("en", { month: "2-digit" }).format(date);
     const da = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
     if (
       ye !==
       new Intl.DateTimeFormat("en", { year: "numeric" }).format(new Date())
     ) {
-      return `${da}-${mo}-${ye}`;
+      return `${da}/${mo}/${ye}`;
     } else {
-      return `${da}-${mo}`;
+      return `${da}/${mo}`;
     }
   }
   cleanModelState() {
     this.setState({
       type: "",
-      eventTag: [],
+      organiser: [],
       program: "",
       notes: "",
       eventDate: null,
     });
   }
-  labelColorSwitch(label) {
-    switch (label) {
-      case "Dahab":
-        return "danger";
-      case "Fayyoum":
-        return "success";
-      case "Giza":
-        return "warning";
-      case "Saqqara":
-        return "info";
-
-      default:
-        return "light";
-    }
-  }
   addPost() {
     const {
       eventsData,
       type,
-      eventTag,
+      organiser,
       program,
       notes,
       eventDate,
       eventNumber,
     } = this.state;
     const id = eventsData.length ? eventsData[0].id + 1 : 0;
-    const label = (type.value || "Anonymous ") + " " + (eventNumber + 1);
+    const programValue = program.value||"";
+    const time = programValue.toLowerCase()==="morning"?"|9AM":programValue.toLowerCase()==="afternoon"?"|2PM":"";
+  
+    const label = `${type.value || "Anonymous "} |${this.formatDate(eventDate.toDate())}${time}`;
     const user = localStorage.getItem("user_id");
-    // const status = this.eventStatusGenerator(date);
 
     const item = {
       eventDate:
@@ -206,7 +169,7 @@ class EventCreator extends Component {
         new Date(),
       type: type.value || "",
       program: program.value || "",
-      eventTag: eventTag,
+      organiser: organiser,
       notes: notes,
       id: id,
       label: label,
@@ -214,17 +177,6 @@ class EventCreator extends Component {
       creationDate: new Date(),
       createdBy: user,
     };
-    // if (
-    //   Object.keys(category).length === 0 ||
-    //   !notes.length ||
-    //   Object.keys(label).length === 0
-    // ) {
-    //   this.setState({ isError: true });
-    //   return;
-    // }
-
-    console.log("Modal data: ", item);
-
     docRef
       .update({
         events: firebase.firestore.FieldValue.arrayUnion(item),
@@ -241,23 +193,11 @@ class EventCreator extends Component {
       });
   }
 
+  errorNotification(message = "Something Happened!", title = "", style = "filled") {
+    NotificationManager.error(message, title, 3000, null, null, style);
+  }
   notification(message = "Something Happened!", title = "", style = "filled") {
     NotificationManager.success(message, title, 3000, null, null, style);
-  }
-
-  eventStatusGenerator(date, deleted = false) {
-    if (deleted) {
-      return { status: "CANCELLED", labelColor: "danger" };
-    } else
-      switch (date) {
-        case new Date().after(date):
-          return { status: "DONE", labelColor: "success" };
-        case new Date().before(date):
-          return { status: "In Progress", labelColor: "warning" };
-
-        default:
-          return { status: "Unknown", labelColor: "light" };
-      }
   }
   isDateBeforeToday(date, deleted = false) {
     if (deleted) {
@@ -282,7 +222,9 @@ class EventCreator extends Component {
       .then(() => {
         setTimeout(() => {
           this.setPostsList();
-          this.notification("You have successfully deleted " + item.label + "!");
+          this.notification(
+            "You have successfully deleted " + item.label + "!"
+          );
         }, 500);
       })
       .catch((e) => {
@@ -291,122 +233,126 @@ class EventCreator extends Component {
   }
   isArabic(text) {
     var pattern = /[\u0600-\u06FF\u0750-\u077F]/;
-    console.log(pattern.test(text));
     return pattern.test(text);
   }
-  textToClipboard(text) {
-    clearInterval(timer);
-    var dummy = document.createElement("textarea");
-    document.body.appendChild(dummy);
-
-    dummy.value = text;
-    dummy.select();
-
-    document.execCommand("copy");
-    this.iosCopyToClipboard(dummy);
-    this.setState({ isCopied: true });
-
-    document.body.removeChild(dummy);
-
-    timer = setTimeout(() => {
-      this.setState({ isCopied: false });
-    }, 3000);
+  handleChangeMulti = (organiser) => {
+    this.setState({ organiser });
+  };
+  getRidersForEvent = (eventNumber) => {
+    const { ridersData } = this.state;
+    if (!ridersData) return;
+    this._asyncRequest = null;
+    if (ridersData) {
+      const ridersWithMatchingEvent = ridersData.filter((rider) =>
+        rider.event.includes(eventNumber)
+      );
+      return ridersWithMatchingEvent;
+    }
+  };
+  setEditModelInputValues(item) {
+    this.setState({
+      type: { label: item.type, value: item.type } || {},
+      organiser: item.organiser,
+      program: { label: item.program, value: item.program } || {},
+      notes: item.notes,
+      eventDate: null,
+    });
   }
-  iosCopyToClipboard(el) {
-    var oldContentEditable = el.contentEditable,
-      oldReadOnly = el.readOnly,
-      range = document.createRange();
+  editPost() {
+    const id = this.state.editPostId;
+    const olditem = this.state.eventsData.filter((e) => e.id === id)[0];
+    const {
+      type,
+      organiser,
+      program,
+      notes
+    } = this.state;
+    const programValue = program.value||"";
+    const time = programValue.toLowerCase()==="morning"?"|9AM":programValue.toLowerCase()==="afternoon"?"|2PM":"";
+    const label = `${type.value || "Anonymous "} |${this.formatDate(olditem.eventDate.toDate())}${time}`;
 
-    el.contentEditable = true;
-    el.readOnly = false;
-    range.selectNodeContents(el);
 
-    var s = window.getSelection();
-    s.removeAllRanges();
-    s.addRange(range);
-
-    el.setSelectionRange(0, 999999);
-
-    el.contentEditable = oldContentEditable;
-    el.readOnly = oldReadOnly;
-
-    document.execCommand("copy");
-  }
-  toggleAccordion(id) {
-    let isOpenList = {
-      1: true,
+    const item = {
+      ...olditem,
+      label:label,
+      value:label,
+      type: type.value || "",
+      organiser,
+      program: program.value || "",
+      notes
     };
+    console.log("OLD ITEM || ", olditem)
+    console.log("NEW ITEM || ", item)
+    docRef
+      .update({
+        events: firebase.firestore.FieldValue.arrayRemove(olditem),
+      })
+      .then(() => {
+        docRef
+          .update({
+            events: firebase.firestore.FieldValue.arrayUnion(item),
+          })
+          .then(() => {
+            this.notification("You have edited " + item.name + " !");
+            this.setPostsList();
+            this.cleanModelState();
+            this.toggleModalEdit();
+          })
+          .catch((e) => console.log(e));
+      })
+      .catch((e) => {
+        console.log(e)
+        this.errorNotification("ERRRRROOOOR");
+      });
+  }
 
+  toggleModalEdit() {
     this.setState((prevState) => {
       return {
         ...prevState,
-        isOpenList: { ...!isOpenList[id] },
+        modalEditOpen: !prevState.modalEditOpen,
       };
     });
   }
-
-  //Date picker
-
-  //   onSuggestionChange = (event, { newValue }) => {
-  //     this.setState({
-  //       suggestionValue: newValue,
-  //     });
-  //   };
-
-  //   handleTagChange(tags) {
-  //     this.setState({ tags });
-  //   }
-
-  handleChangeMulti = (eventTag) => {
-    this.setState({ eventTag });
-  };
-
-  //   handleChange = (selectedOption) => {
-  //     this.setState({ selectedOption });
-  //   };
-
+  generatEventName(eventType, eventDate, program){
+    const time = program.toLowerCase()==="morning"?"|9AM":program.toLowerCase()==="afternoon"?"|2PM":"";
+    return `iRide | ${eventType} |${this.formatDate(eventDate.toDate())}${time}`;
+  }
   handleChangeDate(date) {
-    console.log(this.formatDate(date));
     this.setState({
       eventDate: date,
     });
   }
 
   render() {
-    const SELECT_DATA = [
-      { label: "7kak", value: "7kak", key: 0 },
-      { label: "Byfasel", value: "Byfasel", key: 1 },
-      { label: "Byhlek el 5el", value: "Byhlek el 5el", key: 2 },
-    ];
     const {
       eventsData,
-      isCopied,
-      fadeClass,
-      errorMessage,
+      ridersData,
       isError,
-      isOpen,
-      isOpenList,
     } = this.state;
 
-    const studs = [
-      { label: "Paid", value: "Paid" },
-      { label: "Normal", value: "Normal" },
-    ];
     const programs = [
-      { label: "Dahab 1", value: "Dahab 1" },
-      { label: "Dahab 2", value: "Dahab 2" },
-      { label: "Fayyoum 1", value: "Fayyoum 1" },
-      { label: "Fayyoum 2", value: "Fayyoum 2" },
-      { label: "Giza 1", value: "Giza 1" },
-      { label: "Giza 2", value: "Giza 2" },
-      { label: "Saqqara 1", value: "Saqqara 1" },
-      { label: "Saqqara 2", value: "Saqqara 2" },
+      { label: "Morning", value: "Morning" },
+      { label: "Afternoon", value: "Afternoon" },
+      { label: "Other", value: "Other" }
     ];
     const types = [
-      { label: "Dahab", value: "Dahab" },
-      { label: "Fayyoum", value: "Fayyoum" },
       { label: "Giza", value: "Giza" },
       { label: "Saqqara", value: "Saqqara" },
+      { label: "Fayyoum", value: "Fayyoum" },
+      { label: "Dahab", value: "Dahab" },
+      { label: "Sphinx", value: "Sphinx" },
+      { label: "Portsaid", value: "Portsaid" },
+    ];
+    const SELECT_DATA = [
+      { label: "Abdullah", value: "Abdullah", key: 0 },
+      { label: "Gohary", value: "Gohary", key: 1 },
+      { label: "Mamdoh", value: "Mamdoh", key: 2 },
+      { label: "Shokry", value: "Shokry", key: 3 },
+      { label: "Ouzo", value: "Ouzo", key: 4 },
+      { label: "Khloud", value: "Khloud", key: 5 },
+      { label: "Moaz", value: "Moaz", key: 6 },
+      { label: "Hala", value: "Hala", key: 7 },
     ];
     return (
       <Fragment>
@@ -455,6 +401,7 @@ class EventCreator extends Component {
                       <IntlMessages id="Type *" />
                     </Label>
                     <Select
+                      key={Math.random()}
                       components={{ Input: CustomSelectInput }}
                       className="react-select"
                       classNamePrefix="react-select"
@@ -488,30 +435,8 @@ class EventCreator extends Component {
                         this.setState({ program: val, isError: false });
                       }}
                     />
-
-                    {/* <Label className="mt-4">
-                      <IntlMessages id="Stud" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      name="form-field-name"
-                      options={studs.map((x, i) => {
-                        return {
-                          label: x.label,
-                          value: x.label,
-                          key: i,
-                          color: x.color,
-                        };
-                      })}
-                      value={this.state.stud}
-                      onChange={(val) => {
-                        this.setState({ stud: val, isError: false });
-                      }}
-                    /> */}
                     <Label className="mt-4">
-                      <IntlMessages id="Tag" />
+                      <IntlMessages id="Organiser" />
                     </Label>
                     <Select
                       components={{ Input: CustomSelectInput }}
@@ -519,22 +444,10 @@ class EventCreator extends Component {
                       classNamePrefix="react-select"
                       isMulti
                       name="form-field-name"
-                      value={this.state.eventTag}
+                      value={this.state.organiser}
                       onChange={(e) => this.handleChangeMulti(e)}
                       options={SELECT_DATA}
                     />
-
-                    {/* <Label className="mt-4">
-                      <IntlMessages id="survey.title" />
-                    </Label>
-                    <Input
-                      type="text"
-                      defaultValue={this.state.title}
-                      onChange={(event) => {
-                        this.setState({ title: event.target.value });
-                      }}
-                    /> */}
-
                     <Label className="mt-4">
                       <IntlMessages id="Notes" />
                     </Label>
@@ -548,36 +461,6 @@ class EventCreator extends Component {
                         });
                       }}
                     />
-
-                    {/* <Label className="mt-4">
-                      <IntlMessages id="survey.status" />
-                    </Label>
-                    <CustomInput
-                      type="radio"
-                      id="exCustomRadio"
-                      name="customRadio"
-                      label="COMPLETED"
-                      checked={this.state.status === "COMPLETED"}
-                      onChange={(event) => {
-                        this.setState({
-                          status:
-                            event.target.value == "on" ? "COMPLETED" : "ACTIVE",
-                        });
-                      }}
-                    /> */}
-                    {/* <CustomInput
-                      type="radio"
-                      id="exCustomRadio2"
-                      name="customRadio2"
-                      label="ACTIVE"
-                      checked={this.state.status === "ACTIVE"}
-                      onChange={(event) => {
-                        this.setState({
-                          status:
-                            event.target.value != "on" ? "COMPLETED" : "ACTIVE",
-                        });
-                      }}
-                    /> */}
                   </ModalBody>
                   {isError && (
                     <p className="text-danger text-center">
@@ -601,16 +484,117 @@ class EventCreator extends Component {
                     </Button>
                   </ModalFooter>
                 </Modal>
+
+                 {/* Edit Modal */}
+                 <Modal
+                  isOpen={this.state.modalEditOpen}
+                  toggle={() => {
+                    this.toggleModalEdit();
+                    //this.cleanModelState();
+                  }}
+                  wrapClassName="modal-right"
+                  //   backdrop="static"
+                >
+                  <ModalHeader   toggle={() => {
+                      this.toggleModalEdit();
+                      
+                    }}>
+                    <IntlMessages id="Edit Event" />
+                  </ModalHeader>
+                  <ModalBody>
+                    <Label className="mt-4">
+                      <IntlMessages id="Type *" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={types.map((x, i) => {
+                        return {
+                          label: x.label,
+                          value: x.label,
+                          key: i,
+                          color: x.color,
+                        };
+                      })}
+                      value={this.state.type}
+                      onChange={(val) => {
+                        this.setState({ type: val, isError: false });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Program *" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={programs.map((x, i) => {
+                        return { label: x.label, value: x.value, key: i };
+                      })}
+                      value={this.state.program}
+                      onChange={(val) => {
+                        this.setState({ program: val, isError: false });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Organiser" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      isMulti
+                      name="form-field-name"
+                      value={this.state.organiser}
+                      onChange={(e) => this.handleChangeMulti(e)}
+                      options={SELECT_DATA}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Notes" />
+                    </Label>
+                    <Input
+                      type="textarea"
+                      defaultValue={this.state.notes}
+                      onChange={(event) => {
+                        this.setState({
+                          notes: event.target.value,
+                          isError: false,
+                        });
+                      }}
+                    />
+                  </ModalBody>
+                  {isError && (
+                    <p className="text-danger text-center">
+                      Detail, Category and Label must be filled!
+                    </p>
+                  )}
+                  <ModalFooter>
+                    <Button
+                      color="danger"
+                      outline
+                      onClick={() => {
+                        this.toggleModalEdit();
+                        //this.cleanModelState();
+                      }}
+                    >
+                      <IntlMessages id="survey.cancel" />
+                    </Button>
+                    <Button
+                      color="primary"
+                      outline="light"
+                      onClick={() => this.editPost()}
+                    >
+                      <IntlMessages id="survey.submit" />
+                    </Button>
+                  </ModalFooter>
+                </Modal>
               </div>
             </div>
 
-            <div className="mb-2">
-            <Row>
-            <Colxx xxs="11"></Colxx>
-            <Colxx xxs="1">
-              <i className="simple-icon-reload align-middle ml-auto" style={{cursor:"pointer"}}onClick={()=>this.setPostsList()}/>
-            </Colxx>
-            </Row>
+            <div className="mb-2" >
               {/* <Button
                 color="empty"
                 id="displayOptions"
@@ -622,13 +606,13 @@ class EventCreator extends Component {
               </Button> */}
             </div>
             <Separator className="mb-5" />
-
+            <PullToRefresh onRefresh={this.setPostsList}>
             <Row>
               {eventsData ? (
                 eventsData.map((item, index) => {
                   return (
-                    <Fragment key={0}>
-                      <Colxx xxs="12" key={index}>
+                    <Fragment key={item.id+Math.random()}>
+                      <Colxx xxs="12" key={item.id}>
                         <Card className="card d-flex mb-1">
                           <div className="d-flex flex-grow-1 min-width-zero">
                             <CardBody className="py-3 align-self-center d-flex flex-column flex-md-row justify-content-between min-width-zero align-items-md-center">
@@ -646,11 +630,14 @@ class EventCreator extends Component {
                                       : "align-middle d-inline-block"
                                   }
                                 >
-                                  {item.label}
+                                  {this.generatEventName(item.type, item.eventDate, item.program)}
                                 </span>
                               </NavLink>
                               <p className="mb-1 text-muted text-small w-15 w-xs-100">
-                                {item.type.label}
+                                {item.organiser.map(i=>i.value).join(", ")}
+                              </p>
+                              <p className="mb-1 text-muted text-small w-15 w-xs-100">
+                                {item.program}
                               </p>
                               <p className="mb-1 text-muted text-small w-15 w-xs-100">
                                 {this.formatDate(item.eventDate.toDate())}
@@ -675,7 +662,7 @@ class EventCreator extends Component {
                               </div>
                             </CardBody>
                             {!item.deleted ? (
-                              <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                              <div className="custom-control custom-checkbox pl-1 align-self-center pr-4" style={{ display: "inline-flex" }}>
                                 <ConfirmationModal
                                   button={
                                     <i
@@ -700,6 +687,31 @@ class EventCreator extends Component {
                                   }
                                   action={() => this.deletePost(item.id)}
                                 />
+                                                              <i
+                                className={`${"simple-icon-wrench heading-icon ml-2 mr-3"}`}
+                                onMouseOver={(e) =>
+                                  (e.target.style.color = "white")
+                                }
+                                onMouseOut={(e) =>
+                                  (e.target.style.color = "orange")
+                                }
+                                onMouseDown={(e) =>
+                                  (e.target.style.color = "green")
+                                }
+                                onMouseUp={(e) =>
+                                  (e.target.style.color = "white")
+                                }
+                                style={{
+                                  color: "orange",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => {
+                                  console.log("EDIT ITEM ||",item);
+                                  this.setEditModelInputValues(item);
+                                  this.toggleModalEdit();
+                                  this.setState({ editPostId: item.id });
+                                }}
+                              />
                               </div>
                             ) : (
                               <div />
@@ -712,7 +724,35 @@ class EventCreator extends Component {
                       <Colxx xxs="12">
                         <UncontrolledCollapse toggler={"#toggler" + item.id}>
                           <Card className="mb-3">
-                            <CardBody>{item.notes}</CardBody>
+                            <CardBody>
+                              <Card
+                                className={
+                                  this.isArabic(item.notes)
+                                    ? "align-middle d-inline-block rtl"
+                                    : "align-middle d-inline-block"
+                                }
+                              >
+                                <div
+                                  className="d-flex"
+                                  style={{ flexWrap: "wrap" }}
+                                >
+                                  {ridersData ? (
+                                    this.getRidersForEvent(item.label).map(
+                                      (rider, index) => {
+                                        return (
+                                          <Badge key={index} pill color="success">
+                                            {index + 1}. {rider.name} -{" "}
+                                            {rider.phone} - dis:{rider.discount}
+                                          </Badge>
+                                        );
+                                      }
+                                    )
+                                  ) : (
+                                    <span></span>
+                                  )}
+                                </div>
+                              </Card>
+                            </CardBody>
                           </Card>
                         </UncontrolledCollapse>
                       </Colxx>
@@ -723,6 +763,7 @@ class EventCreator extends Component {
                 <div className="loading" />
               )}
             </Row>
+            </PullToRefresh>
           </Colxx>
         </Row>
       </Fragment>
