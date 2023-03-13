@@ -61,12 +61,19 @@ export const getCurrentUser = () => {
         id: "yRGROLqSIZUyj2DSujoqfvLCqVV2",
         email: "gohary363@gmail.com",
       };
+    case "ChzYvzJR0WhHn4dunrPiS26ir9q2":
+      //Shokry
+      return {
+        name: "Shokry",
+        id: "ChzYvzJR0WhHn4dunrPiS26ir9q2",
+        email: "shokry@irideegypt.com",
+      };
 
     default:
       return {
         name: "Unknown",
         id: "AAAAA",
-        email: "irideegypt@gmail.com@gmail.com",
+        email: "irideegypt@gmail.com",
       };
   }
 };
@@ -100,7 +107,13 @@ export const getUserById = (userID) => {
         id: "yRGROLqSIZUyj2DSujoqfvLCqVV2",
         email: "gohary363@gmail.com",
       };
-
+      case "ChzYvzJR0WhHn4dunrPiS26ir9q2":
+        //Shokry
+        return {
+          name: "Shokry",
+          id: "ChzYvzJR0WhHn4dunrPiS26ir9q2",
+          email: "shokry@irideegypt.com",
+        };
     default:
       return {
         name: "Unknown",
@@ -139,7 +152,13 @@ export const getUserByName = (userName) => {
         id: "yRGROLqSIZUyj2DSujoqfvLCqVV2",
         email: "gohary363@gmail.com",
       };
-
+      case "ChzYvzJR0WhHn4dunrPiS26ir9q2":
+        //Shokry
+        return {
+          name: "Shokry",
+          id: "ChzYvzJR0WhHn4dunrPiS26ir9q2",
+          email: "shokry@irideegypt.com",
+        };
     default:
       return {
         name: "Unknown",

@@ -21,6 +21,7 @@ const INIT_STATE = {
 	loading: false,
 	labels: [
 		{ label: "Sohayb Hassan", color: "danger" },
+		{ label: "Ahmed Shokry", color: "success" },
 		{ label: "Gohary", color: "warning" },
 		{ label: "Moaz M.", color: "info" },
 		{ label: "Anas Taher", color: "success" }

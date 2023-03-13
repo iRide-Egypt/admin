@@ -193,13 +193,13 @@ class TopNav extends Component {
         this.setState({ username: "Sohayb Hassan" });
         this.setState({ profilePicture: "/assets/img/sohayb.webp" });
         break;
-      // case "2jTImSqRJNOivjzGGLcDYmkE2lK2":
-      //   this.setState({ username: "Sohayb Hassan" });
-      //   this.setState({ profilePicture: "/assets/img/sohayb.jpg" });
-      //   break;
       case "byN8fQxFkpaJJdi5OzfQhKywqiy2":
         this.setState({ username: "Moaz M. Ali" });
         this.setState({ profilePicture: "/assets/img/moaz.jpg" });
+        break;
+      case "ChzYvzJR0WhHn4dunrPiS26ir9q2":
+        this.setState({ username: "Shokry" });
+        this.setState({ profilePicture: "/assets/img/shokry.jpg" });
         break;
       case "yRGROLqSIZUyj2DSujoqfvLCqVV2":
         this.setState({ username: "Gohary" });

@@ -467,7 +467,7 @@ class Sidebar extends Component {
                     <IntlMessages id="menu.postbank" />
                   </NavLink>
                 </NavItem>
-                <NavItem>
+                {/* <NavItem>
                   <NavLink to="/app/applications/qrReader">
                     <i className="simple-icon-puzzle" />{" "}
                     <IntlMessages id="menu.qrReader" />
@@ -484,7 +484,7 @@ class Sidebar extends Component {
                     <i className="simple-icon-puzzle" />{" "}
                     <IntlMessages id="menu.constantManager" />
                   </NavLink>
-                </NavItem>
+                </NavItem> */}
                 <NavItem>
                   <NavLink to="/app/applications/audience">
                     <i className="simple-icon-puzzle" />{" "}
