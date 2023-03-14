@@ -156,7 +156,7 @@ class EventCreator extends Component {
       eventDate,
       eventNumber,
     } = this.state;
-    const id = eventsData.length ? eventsData[0].id + 1 : 0;
+    const id = this.createUID();
     const programValue = program.value||"";
     const time = programValue.toLowerCase()==="morning"?"|9AM":programValue.toLowerCase()==="afternoon"?"|2PM":"";
   
@@ -192,7 +192,9 @@ class EventCreator extends Component {
         console.log(err);
       });
   }
-
+  createUID(){
+    return 'ID-' + (new Date()).getTime() + Math.random().toString(36).substr(2);
+  }
   errorNotification(message = "Something Happened!", title = "", style = "filled") {
     NotificationManager.error(message, title, 3000, null, null, style);
   }
@@ -358,7 +360,7 @@ class EventCreator extends Component {
       <Fragment>
         <Row className="app-row survey-app pr-0">
           <Colxx xxs="12">
-            <div className="mb-2">
+            <div className="mb-2 text-center text-sm-left text-md-left text-lg-left">
               <h1>
                 <IntlMessages id="menu.eventcreator" />
               </h1>
@@ -369,6 +371,7 @@ class EventCreator extends Component {
                   outline="light"
                   size="lg"
                   className="top-right-button mr-1 px-4"
+                  style={{minInlineSize: "-webkit-fill-available"}}
                   onClick={() => this.toggleModal()}
                 >
                   <IntlMessages id="Add New Event" />

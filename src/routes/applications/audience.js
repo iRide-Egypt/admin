@@ -76,8 +76,9 @@ class Audience extends Component {
     ridingExNotes: "",
     whatsapp: "",
     whereKnowUs: {},
-    isCar:false,
-    isBreakfast:false
+    isPaid:false,
+    isWhatsapp:true,
+    isSceenshotSent:false
     //.........................
   };
   componentDidMount() {
@@ -175,8 +176,8 @@ class Audience extends Component {
       ridingExNotes: undefined,
       whatsapp: undefined,
       whereKnowUs: undefined,
-      isCar:false,
-      isBreakfast:false,
+      isPaid:false,
+      isSceenshotSent:false,
       isSaqqara:false
     });
   }
@@ -214,8 +215,8 @@ class Audience extends Component {
       notes,
       isKnowsAboutUs,
       ridersData,
-      isCar,
-      isBreakfast
+      isPaid,
+      isSceenshotSent
     } = this.state;
     //Obligator: name, event, phone, whatsapp, discount
     const id = ridersData.length ? ridersData[0].id + 1 : 0;
@@ -236,8 +237,8 @@ class Audience extends Component {
       riderTag: riderTag || [{label:"", value:"", key:""}],
       notes: notes,
       isKnowsAboutUs: isKnowsAboutUs,
-      isCar:isCar,
-      isBreakfast:isBreakfast,
+      isPaid:isPaid,
+      isSceenshotSent:isSceenshotSent,
       id: id,
       creationDate: new Date(),
       createdBy: localStorage.getItem("user_id"),
@@ -441,42 +442,6 @@ class Audience extends Component {
                           this.setState({ isSaqqara: true }):this.setState({ isSaqqara: false });
                       }}
                     />
-
-                    {this.state.isSaqqara && (
-                      <Row>
-                          <Colxx lg="5">
-                          <CustomInput
-                            checked={this.state.isBreakfast}
-                            onChange={(e) => {
-                              this.setState({
-                                isBreakfast: e.target.checked,
-                                isError: false,
-                              });
-                            }}
-                            className="mt-4"
-                            type="checkbox"
-                            id="exCustomCheckbox1"
-                            label="Breakfast?"
-                          />
-                        </Colxx>
-                        <Colxx lg="6">
-                          <CustomInput
-                            checked={this.state.isCar}
-                            onChange={(e) => {
-                              this.setState({
-                                isCar: e.target.checked,
-                                isError: false,
-                              });
-                            }}
-                            className="mt-4"
-                            type="checkbox"
-                            id="exCustomCheckbox2"
-                            label="Car?"
-                          />
-                        </Colxx>
-                      
-                      </Row>
-                    )}
                     <Label className="mt-4">
                       <IntlMessages id="Phone Number *" />
                     </Label>
@@ -487,7 +452,77 @@ class Audience extends Component {
                         this.setState({ phone: event.target.value });
                       }}
                     />
+                      
+                          <CustomInput
+                            checked={this.state.isPaid}
+                            onChange={(e) => {
+                              this.setState({
+                                isPaid: e.target.checked,
+                                isError: false,
+                              });
+                            }}
+                            className="mt-4"
+                            type="checkbox"
+                            id="exCustomCheckbox2"
+                            label="Paid?"
+                          />
+                    {this.state.isPaid && <div>
                     <Label className="mt-4">
+                      <IntlMessages id="Payment Method" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={paymentMethod.map((x, i) => {
+                        return {
+                          label: x.label,
+                          value: x.label,
+                          key: i,
+                          color: x.color,
+                        };
+                      })}
+                      value={this.state.paymentMethod}
+                      onChange={(val) => {
+                        this.setState({ paymentMethod: val, isError: false });
+                      }}
+                    />
+                    {this.state.paymentMethod.value==="Vodafone Cash" && (
+                      <Row>
+                          <Colxx lg="5">
+                          <CustomInput
+                            checked={this.state.isSceenshotSent}
+                            onChange={(e) => {
+                              this.setState({
+                                isSceenshotSent: e.target.checked,
+                                isError: false,
+                              });
+                            }}
+                            className="mt-4"
+                            type="checkbox"
+                            id="exCustomCheckbox1"
+                            label="Screenshot sent to Shokry?"
+                          />
+                        </Colxx>
+                      </Row>
+                    )}
+                    </div>
+                    }
+                         <CustomInput
+                            checked={this.state.isWhatsapp}
+                            onChange={(e) => {
+                              this.setState({
+                                isWhatsapp: e.target.checked,
+                                isError: false,
+                              });
+                            }}
+                            className="mt-4"
+                            type="checkbox"
+                            id="exCustomCheckbox3"
+                            label="Whatsapp on this number?"
+                          />
+                   {!this.state.isWhatsapp && <Row><Label className="mt-4">
                       <IntlMessages id="Whatsapp Number *" />
                     </Label>
                     <Input
@@ -496,7 +531,7 @@ class Audience extends Component {
                       onChange={(event) => {
                         this.setState({ whatsapp: event.target.value });
                       }}
-                    />
+                    /></Row>}
 
                     <Label className="mt-4">
                       <IntlMessages id="Discount *" />
@@ -600,27 +635,7 @@ class Audience extends Component {
                       }}
                     />
 
-                    <Label className="mt-4">
-                      <IntlMessages id="Payment Method" />
-                    </Label>
-                    <Select
-                      components={{ Input: CustomSelectInput }}
-                      className="react-select"
-                      classNamePrefix="react-select"
-                      name="form-field-name"
-                      options={paymentMethod.map((x, i) => {
-                        return {
-                          label: x.label,
-                          value: x.label,
-                          key: i,
-                          color: x.color,
-                        };
-                      })}
-                      value={this.state.paymentMethod}
-                      onChange={(val) => {
-                        this.setState({ paymentMethod: val, isError: false });
-                      }}
-                    />
+
                     <Label className="mt-4">
                       <IntlMessages id="Tag" />
                     </Label>
