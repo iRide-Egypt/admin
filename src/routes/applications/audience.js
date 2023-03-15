@@ -37,6 +37,7 @@ import {
 import ReactAutosuggest from "Components/ReactAutosuggest";
 import ConfirmationModal from "Components/ConfirmationModal";
 import Select from "react-select";
+import Switch from "rc-switch";
 import CustomSelectInput from "Components/CustomSelectInput";
 
 import { Colxx, Separator } from "Components/CustomBootstrap";
@@ -52,7 +53,7 @@ let timer;
 class Audience extends Component {
   state = {
     //Main Data Lists
-    ridersData: null,
+    ridersList: null,
     eventsList: [],
     //................
 
@@ -80,6 +81,7 @@ class Audience extends Component {
     whereKnowUs: {},
     isPaid:false,
     isWhatsapp:true,
+    isWithSomeone:false,
     isSceenshotSent:false
     //.........................
   };
@@ -101,10 +103,10 @@ class Audience extends Component {
         if (!doc.data().riders) return;
         this._asyncRequest = null;
 
-        this.setState({ ridersData: doc.data().riders.reverse() });
+        this.setState({ ridersList: doc.data().riders.reverse() });
       })
       .catch((err) => {
-        this.setState({ ridersData: [] });
+        this.setState({ ridersList: [] });
       });
   };
 
@@ -199,7 +201,7 @@ class Audience extends Component {
     }
   }
   addPost() {
-    // const { title, category, detail, label, ridersData } = this.state;
+    // const { title, category, detail, label, ridersList } = this.state;
     const {
       name,
       event,
@@ -216,12 +218,12 @@ class Audience extends Component {
       riderTag,
       notes,
       isKnowsAboutUs,
-      ridersData,
+      ridersList,
       isPaid,
       isSceenshotSent
     } = this.state;
     //Obligator: name, event, phone, whatsapp, discount
-    const id = ridersData.length ? ridersData[0].id + 1 : 0;
+    const id = ridersList.length ? ridersList[0].id + 1 : 0;
 
     const item = {
       name: name,
@@ -263,7 +265,7 @@ class Audience extends Component {
   }
 
   deletePost(id) {
-    const item = this.state.ridersData.filter((e) => e.id === id)[0];
+    const item = this.state.ridersList.filter((e) => e.id === id)[0];
     docRef
       .update({
         riders: firebase.firestore.FieldValue.arrayRemove(item),
@@ -356,7 +358,7 @@ class Audience extends Component {
 
   render() {
     const {
-      ridersData,
+      ridersList,
       isCopied,
       fadeClass,
       errorMessage,
@@ -431,17 +433,10 @@ class Audience extends Component {
                     <IntlMessages id="Add New Rider" />
                   </ModalHeader>
                   <ModalBody>
-                    <Label className="mt-4">
-                      <IntlMessages id="Name *" />
-                    </Label>
-                    <Input
-                      type="text"
-                      defaultValue={this.state.name}
-                      onChange={(event) => {
-                        this.setState({ name: event.target.value });
-                      }}
-                    />
-                    <Label className="mt-4">
+                  
+
+
+                  <Label className="mt-4">
                       <IntlMessages id="Event *" />
                     </Label>
                     <Select
@@ -455,10 +450,48 @@ class Audience extends Component {
                       value={this.state.event}
                       onChange={(val) => {
                         this.setState({ event: val, isError: false });
-                        val.value.includes("Saqqara") ?
-                          this.setState({ isSaqqara: true }):this.setState({ isSaqqara: false });
                       }}
                     />
+                  {this.state.event && <div><Label className="mt-4">
+                      <IntlMessages id="With someone?" />
+                    </Label>
+                    <Switch
+                      className="custom-switch custom-switch-primary"
+                      checked={this.state.isWithSomeone}
+                      onChange={(isWithSomeone) => {
+                        this.setState({ isWithSomeone });
+                      }}
+                    /></div>}
+                    {this.state.isWithSomeone && <div>
+                    <Label className="mt-4">
+                      <IntlMessages id="With who?" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={ridersList.filter((x) => x.event.includes(this.state.event.value)).map((x, i) => {
+                        console.log("RIDERSLIST || ", this.state.event.value)
+                        return { label: x.name, value: x.id, key: i };
+                      })}
+                      value={this.state.withWho}
+                      onChange={(val) => {
+                        this.setState({ withWho: val, isError: false });
+                      }}
+                    />
+                      </div>}
+                    <Label className="mt-4">
+                      <IntlMessages id="Name *" />
+                    </Label>
+                    <Input
+                      type="text"
+                      defaultValue={this.state.name}
+                      onChange={(event) => {
+                        this.setState({ name: event.target.value });
+                      }}
+                    />
+                   
                     <Label className="mt-4">
                       <IntlMessages id="Booking *" />
                     </Label>
@@ -467,6 +500,7 @@ class Audience extends Component {
                       className="react-select"
                       classNamePrefix="react-select"
                       name="form-field-name"
+                      isSearchable={false}
                       options={bookersList.map((x, i) => {
                         return { label: x.label, value: x.value, key: i };
                       })}
@@ -778,8 +812,8 @@ class Audience extends Component {
             <Separator className="mb-5" />
 
             <Row>
-              {ridersData ? (
-                ridersData.map((item, index) => {
+              {ridersList ? (
+                ridersList.map((item, index) => {
                   return (
                     <Fragment key={index}>
                       <Colxx xxs="12" key={index}>
