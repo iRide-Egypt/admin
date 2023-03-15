@@ -68,6 +68,13 @@ export const getCurrentUser = () => {
         id: "ChzYvzJR0WhHn4dunrPiS26ir9q2",
         email: "shokry@irideegypt.com",
       };
+    case "L41uJRz4V2ZaYTbRnyJ0DfFEke72":
+      //Tasnim
+      return {
+        name: "Tasnim",
+        id: "L41uJRz4V2ZaYTbRnyJ0DfFEke72",
+        email: "tasnim@irideegypt.com",
+      };
 
     default:
       return {
@@ -114,6 +121,13 @@ export const getUserById = (userID) => {
           id: "ChzYvzJR0WhHn4dunrPiS26ir9q2",
           email: "shokry@irideegypt.com",
         };
+      case "L41uJRz4V2ZaYTbRnyJ0DfFEke72":
+          //Tasnim
+          return {
+            name: "Tasnim",
+            id: "L41uJRz4V2ZaYTbRnyJ0DfFEke72",
+            email: "tasnim@irideegypt.com",
+          };
     default:
       return {
         name: "Unknown",
@@ -159,6 +173,13 @@ export const getUserByName = (userName) => {
           id: "ChzYvzJR0WhHn4dunrPiS26ir9q2",
           email: "shokry@irideegypt.com",
         };
+        case "L41uJRz4V2ZaYTbRnyJ0DfFEke72":
+          //Tasnim
+          return {
+            name: "Tasnim",
+            id: "L41uJRz4V2ZaYTbRnyJ0DfFEke72",
+            email: "tasnim@irideegypt.com",
+          };
     default:
       return {
         name: "Unknown",
