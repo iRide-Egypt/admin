@@ -45,6 +45,7 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase";
 import { db } from "../../firebase";
 import { NotificationManager } from "Components/ReactNotifications";
+import { getUserById, getCurrentUser } from "../../util/Utils";
 
 const docRef = db.collection("app").doc("riders");
 let timer;
@@ -65,9 +66,10 @@ class Audience extends Component {
     age: "",
     discount: 0,
     email: "",
-    event: [{}],
+    event: null,
+    booker: null,
     medicalHistory: "",
-    name: "",
+    name: null,
     notes: "",
     paymentMethod: {},
     phone: "",
@@ -341,11 +343,17 @@ class Audience extends Component {
   handleChangeMulti = (riderTag) => {
     this.setState({ riderTag });
   };
+
   toggleSmall() {
     this.setState({
       modalSmall: !this.state.modalSmall,
     });
   }
+  selectMenuCurrentUser(){
+    const currentUser= getCurrentUser();
+    return {label: currentUser.name, value: currentUser.id, key:2};
+  }
+
   render() {
     const {
       ridersData,
@@ -363,7 +371,16 @@ class Audience extends Component {
       { label: "Normal", value: "Normal" },
       { label: "Hard", value: "Hard" },
     ];
-
+    const bookersList = [
+      { label: "Tasnim", value: "Tasnim" },
+      { label: "Gohary", value: "yRGROLqSIZUyj2DSujoqfvLCqVV2" },
+      { label: getUserById("ChzYvzJR0WhHn4dunrPiS26ir9q2").name, value: "ChzYvzJR0WhHn4dunrPiS26ir9q2" },
+      { label: "Mamdoh", value: "Mamdoh" },
+      { label: getUserById("byN8fQxFkpaJJdi5OzfQhKywqiy2").name, value: "byN8fQxFkpaJJdi5OzfQhKywqiy2" },
+      { label: "Hala", value: "Hala" },
+      { label: getUserById("NYnE9NoeKiT08U05AmK2ijPpcvV2").name, value: "NYnE9NoeKiT08U05AmK2ijPpcvV2" },
+      { label: "Ouzo", value: "Ouzo" },
+    ]
     const paymentMethod = [
       { label: "Vodafone Cash", value: "Vodafone Cash" },
       { label: "Etisalat Cash", value: "Etisalat Cash" },
@@ -440,6 +457,22 @@ class Audience extends Component {
                         this.setState({ event: val, isError: false });
                         val.value.includes("Saqqara") ?
                           this.setState({ isSaqqara: true }):this.setState({ isSaqqara: false });
+                      }}
+                    />
+                    <Label className="mt-4">
+                      <IntlMessages id="Booking *" />
+                    </Label>
+                    <Select
+                      components={{ Input: CustomSelectInput }}
+                      className="react-select"
+                      classNamePrefix="react-select"
+                      name="form-field-name"
+                      options={bookersList.map((x, i) => {
+                        return { label: x.label, value: x.value, key: i };
+                      })}
+                      value={this.state.booker || this.selectMenuCurrentUser()}
+                      onChange={(val) => {
+                        this.setState({ booker: val, isError: false });
                       }}
                     />
                     <Label className="mt-4">
