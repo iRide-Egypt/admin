@@ -485,6 +485,29 @@ class Audience extends Component {
                         this.setState({ phone: event.target.value });
                       }}
                     />
+                     <CustomInput
+                            checked={this.state.isWhatsapp}
+                            onChange={(e) => {
+                              this.setState({
+                                isWhatsapp: e.target.checked,
+                                isError: false,
+                              });
+                            }}
+                            className="mt-4"
+                            type="checkbox"
+                            id="exCustomCheckbox3"
+                            label="Whatsapp on this number?"
+                          />
+                   {!this.state.isWhatsapp && <div><Label className="mt-4">
+                      <IntlMessages id="Whatsapp Number *" />
+                    </Label>
+                    <Input
+                      type="tel"
+                      defaultValue={this.state.whatsapp}
+                      onChange={(event) => {
+                        this.setState({ whatsapp: event.target.value });
+                      }}
+                    /></div>}
                       
                           <CustomInput
                             checked={this.state.isPaid}
@@ -542,29 +565,7 @@ class Audience extends Component {
                     )}
                     </div>
                     }
-                         <CustomInput
-                            checked={this.state.isWhatsapp}
-                            onChange={(e) => {
-                              this.setState({
-                                isWhatsapp: e.target.checked,
-                                isError: false,
-                              });
-                            }}
-                            className="mt-4"
-                            type="checkbox"
-                            id="exCustomCheckbox3"
-                            label="Whatsapp on this number?"
-                          />
-                   {!this.state.isWhatsapp && <Row><Label className="mt-4">
-                      <IntlMessages id="Whatsapp Number *" />
-                    </Label>
-                    <Input
-                      type="tel"
-                      defaultValue={this.state.whatsapp}
-                      onChange={(event) => {
-                        this.setState({ whatsapp: event.target.value });
-                      }}
-                    /></Row>}
+
 
                     <Label className="mt-4">
                       <IntlMessages id="Discount *" />
